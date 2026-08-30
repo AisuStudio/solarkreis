@@ -64,6 +64,13 @@ Vier Entscheidungen über waffle hinaus, alle auf `/ds` belegt:
 | aWATTar — Day-Ahead-Spotpreis | nein | offen |
 | NASA FIRMS — aktive Feuer | ja | offen, bis dahin gekennzeichneter Mock |
 
+**Satellitenquelle:** NASA stellt die Auslieferung von **Suomi NPP zum 1.11.2026
+ein** (Hinweis auf der FIRMS-Seite, Stand 30.08.2026). SolarKreis fragt deshalb von
+Anfang an `VIIRS_NOAA21_NRT` und `VIIRS_NOAA20_NRT` ab, nicht `VIIRS_SNPP_NRT` —
+sonst läuft der Feed zwei Monate nach dem Bau still aus. Die genauen Quellennamen
+prüfe ich in Schritt 8 gegen `/api/data_availability` gegen, bevor sie fest im Code
+landen.
+
 Den FIRMS-Key gibt es kostenlos unter
 <https://firms.modaps.eosdis.nasa.gov/api/map_key/> — E-Mail eintragen, der Key
 kommt sofort per Mail. Er gehört dann als `FIRMS_MAP_KEY` in `.env.local`
