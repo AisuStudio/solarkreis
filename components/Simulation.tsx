@@ -18,6 +18,47 @@ import { Schreibpfad } from "./Schreibpfad";
 
 const TAKT_MS = 2000;
 
+/*
+  Der Alarmstreifen. Zeigt, was die Kreis-Regel entschieden hat — auch dann,
+  wenn sie nichts tut. Eine Automatik, die nur bei Eingriffen sichtbar wird,
+  lässt offen, ob sie überhaupt läuft.
+
+  Farbe ist nie das einzige Signal: jede Zeile trägt ihr Wort (Hinweis,
+  Warnung, Kritisch) im Text.
+*/
+function Alarmstreifen({ z }: { z: Zustand }) {
+  const schwere = z.alarme[0]?.severity;
+  const fuellung =
+    schwere === "kritisch" ? "var(--sk-crit-fill)"
+    : schwere === "warnung" ? "var(--sk-write-fill)"
+    : "var(--sk-read-fill)";
+
+  return (
+    <div
+      role="status"
+      style={{
+        padding: "10px 40px",
+        background: z.alarme.length ? fuellung : "var(--color-surface)",
+        color: z.alarme.length ? "var(--sk-on-fill)" : "var(--color-muted)",
+        display: "flex",
+        gap: 16,
+        alignItems: "baseline",
+        flexWrap: "wrap",
+      }}
+    >
+      <span className="sk-mono-eyebrow">
+        Kreis-Regel {z.regel.ausgewertet ? "aktiv" : "wartet"}
+      </span>
+      <span className="sk-text-kompakt">
+        {z.alarme.length ? `${z.alarme[0].severity} · ${z.alarme[0].message}` : z.regel.grund}
+      </span>
+      {z.regel.gehandelt.length > 0 && (
+        <span className="sk-mono-daten">{z.regel.gehandelt.join(" · ")}</span>
+      )}
+    </div>
+  );
+}
+
 export function Simulation({ initial }: { initial: Zustand }) {
   const [z, setZ] = useState(initial);
   const [fehler, setFehler] = useState<string | null>(null);
@@ -68,6 +109,7 @@ export function Simulation({ initial }: { initial: Zustand }) {
           erfolgreiche Abruf von {new Date(z.ts).toLocaleTimeString("de-DE")}.
         </div>
       )}
+      <Alarmstreifen z={z} />
       <Lageplan z={z} />
       <Schreibpfad z={z} nachKommando={() => setAnstoss((n) => n + 1)} />
     </>

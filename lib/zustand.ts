@@ -19,6 +19,7 @@ import { projectStorage } from "./storage";
 import { simNow, store } from "./store";
 import { openMeteo } from "./openmeteo";
 import { ertragEurProStunde, preisStand, refreshPreise } from "./awattar";
+import { auffaelligkeiten, automatik } from "./automatik";
 
 export async function zustand(ts: number = simNow()) {
   /* Beide Quellen parallel: sie hängen nicht voneinander ab, und
@@ -27,6 +28,11 @@ export async function zustand(ts: number = simNow()) {
 
   const kreis = snapshot(ts, openMeteo);
   const preis = preisStand(ts);
+
+  /* Die Kreis-Regel läuft, bevor der Zustand ausgeliefert wird — und über
+     denselben Wächter wie ein Mensch. Sie kann nichts, was ein Bediener
+     nicht auch dürfte. */
+  const regel = automatik(kreis.total_kw, ts);
 
   return {
     ...kreis,
@@ -38,6 +44,8 @@ export async function zustand(ts: number = simNow()) {
       stamm: STORAGE,
       ...projectStorage(ts),
     },
+    regel,
+    alarme: auffaelligkeiten(),
     clock: store().clock,
     operatorId: store().operatorId,
     operatoren: OPERATORS,
