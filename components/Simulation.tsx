@@ -27,7 +27,7 @@ const TAKT_MS = 2000;
   Farbe ist nie das einzige Signal: jede Zeile trägt ihr Wort (Hinweis,
   Warnung, Kritisch) im Text.
 */
-function Alarmstreifen({ z }: { z: Zustand }) {
+function Alarmstreifen({ z, onFeld }: { z: Zustand; onFeld: (id: string) => void }) {
   /* Der Streifen war ein gelber Block über die volle Breite — 80px
      leuchtende Fläche zwischen dunkler Statusleiste und dunkler Insel. Er
      hat die Kopfzone in vier Bänder zerlegt und war lauter als der Alarm,
@@ -67,14 +67,29 @@ function Alarmstreifen({ z }: { z: Zustand }) {
           Frage „und wo?" bleibt offen. Der Verweis erscheint bei jedem Alarm
           mit Feldbezug, nicht nur beim kritischen: er sagt „hier entlang",
           nicht „handle jetzt". */}
+      {/* Der Verweis zeigte auf den Abschnitt unten, solange dort die Knöpfe
+          standen. Sie sitzen jetzt an der Feldkarte im Lageplan — also führt
+          er dorthin: er hebt das betroffene Feld hervor und klappt seine
+          Schaltwarte auf. Ein Sprung nach unten wäre jetzt der Weg weg von
+          der Bedienung. */}
       {z.alarme[0]?.park_id && (
-        <a
+        <button
+          type="button"
           className="sk-text-titel-klein"
-          href={`#eingreifen-${z.alarme[0].park_id}`}
-          style={{ color: "var(--akzent)" }}
+          onClick={() => onFeld(z.alarme[0].park_id!)}
+          style={{
+            background: "none",
+            border: 0,
+            padding: "4px 0",
+            minHeight: 24,
+            color: "var(--akzent)",
+            textDecoration: "underline",
+            cursor: "pointer",
+            font: "inherit",
+          }}
         >
-          Zum Feld unter „Eingreifen" →
-        </a>
+          Betroffenes Feld zeigen →
+        </button>
       )}
       {z.regel.gehandelt.length > 0 && (
         <span className="sk-mono-daten">{z.regel.gehandelt.join(" · ")}</span>
@@ -154,7 +169,7 @@ export function Simulation({ initial }: { initial: Zustand }) {
           erfolgreiche Abruf von {new Date(z.ts).toLocaleTimeString("de-DE")}.
         </div>
       )}
-        <Alarmstreifen z={z} />
+        <Alarmstreifen z={z} onFeld={setFeldAktiv} />
         <Lageplan
           z={z}
           feldAktiv={feldAktiv}

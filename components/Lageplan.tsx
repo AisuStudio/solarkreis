@@ -95,6 +95,12 @@ export function Lageplan({
   /* Die Not-Aus-Rückfrage der Schaltwarte. Zweistufig wie unten in
      „Eingreifen" — dieselbe Regel, nur an einem zweiten Ort. */
   const [notAus, setNotAus] = useState<string | null>(null);
+  /* Festgehalten heißt: die Warte bleibt offen, auch wenn der Zeiger geht.
+     Das ist der Weg für alle, die nicht mit der Maus arbeiten — antippen,
+     antabben, Eingabetaste. Ohne ihn wäre die Bedienung nach dem Entfernen
+     der Knöpfe unten für Touch und Tastatur schlicht verschwunden. */
+  const [gepinnt, setGepinnt] = useState<string | null>(null);
+  const offenesFeld = gepinnt ?? feldAktiv;
 
   const wetter = z.parks[0]?.weather.source;
 
@@ -281,7 +287,7 @@ export function Lageplan({
               Sortierung verschwände die Schaltwarte unter dem nächsten
               Knoten. */}
           {[...felder]
-            .sort((a, b) => (a.park.id === feldAktiv ? 1 : b.park.id === feldAktiv ? -1 : 0))
+            .sort((a, b) => (a.park.id === offenesFeld ? 1 : b.park.id === offenesFeld ? -1 : 0))
             .map((f) => (
               <Knoten
                 key={f.park.id}
@@ -289,13 +295,27 @@ export function Lageplan({
                 y={f.y}
                 w={182}
                 h={88}
-                hervor={feldAktiv === f.park.id}
+                hervor={offenesFeld === f.park.id}
+                bedienbar
+                gepinnt={gepinnt === f.park.id}
                 onZeiger={(an) => {
+                  if (gepinnt) return;
                   onFeld(an ? f.park.id : null);
                   if (!an) setNotAus(null);
                 }}
+                onSchalten={() => {
+                  const zu = gepinnt === f.park.id;
+                  setGepinnt(zu ? null : f.park.id);
+                  onFeld(zu ? null : f.park.id);
+                  if (zu) setNotAus(null);
+                }}
+                onSchliessen={() => {
+                  setGepinnt(null);
+                  onFeld(null);
+                  setNotAus(null);
+                }}
                 panel={
-                  feldAktiv === f.park.id ? (
+                  offenesFeld === f.park.id ? (
                     <Schaltwarte
                       park={f}
                       laeuft={laeuft}
@@ -470,7 +490,13 @@ function Warte({
       height={hoehe}
       style={{ overflow: "visible" }}
     >
-      <div ref={box}>{children}</div>
+      {/* Der Knoten darüber ist selbst ein Knopf. Ohne diesen Riegel liefe
+          jeder Klick auf „50 %" anschließend auch auf den Knoten und klappte
+          die Warte wieder zu. Die Escape-Taste darf dagegen weiter nach oben
+          durch — sie soll auch aus der Warte heraus schließen. */}
+      <div ref={box} onClick={(e) => e.stopPropagation()}>
+        {children}
+      </div>
     </foreignObject>
   );
 }
@@ -567,6 +593,10 @@ function Knoten({
   dunkel,
   hervor,
   onZeiger,
+  bedienbar,
+  gepinnt,
+  onSchalten,
+  onSchliessen,
   panel,
 }: {
   x: number;
@@ -579,6 +609,13 @@ function Knoten({
   dunkel?: boolean;
   hervor?: boolean;
   onZeiger?: (an: boolean) => void;
+  /* Ein bedienbarer Knoten ist ein Knopf, kein Bild: fokussierbar, mit
+     Namen, mit aria-expanded für die Warte darunter. Die Zentrale und der
+     Speicher bleiben Bilder — dort gibt es nichts zu schalten. */
+  bedienbar?: boolean;
+  gepinnt?: boolean;
+  onSchalten?: () => void;
+  onSchliessen?: () => void;
   /* Wird innerhalb derselben Gruppe gezeichnet und schließt bündig an den
      Knoten an. Beides ist nötig: außerhalb der Gruppe würde der Zeiger sie
      beim Hinüberfahren verlieren, mit Lücke ebenso. */
@@ -595,6 +632,24 @@ function Knoten({
       transform={`translate(${x - w / 2} ${y - h / 2})`}
       onMouseEnter={onZeiger ? () => onZeiger(true) : undefined}
       onMouseLeave={onZeiger ? () => onZeiger(false) : undefined}
+      {...(bedienbar
+        ? {
+            tabIndex: 0,
+            role: "button" as const,
+            "aria-expanded": !!gepinnt,
+            "aria-label": `${titel} bedienen`,
+            style: { cursor: "pointer", outlineOffset: 3 },
+            onClick: onSchalten,
+            onFocus: () => onZeiger?.(true),
+            onKeyDown: (e: React.KeyboardEvent) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onSchalten?.();
+              }
+              if (e.key === "Escape") onSchliessen?.();
+            },
+          }
+        : {})}
     >
       {/* Hervorhebung im Rahmen, nicht in der Fläche: eine hellere Füllung
           würde den Knoten nach vorn holen und die Karte selbst verändern.

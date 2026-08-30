@@ -156,7 +156,7 @@ function feuerAlarm(ts: number): void {
       (schlimmster.demo
         ? " — DEMO-SZENARIO, kein echter Treffer."
         : kritisch
-          ? `. Kritisch: unter ${KRITISCH_KM} km und über ${KRITISCH_FRP_MW} MW. Das System schaltet nicht selbst — der Not-Aus für ${feld} liegt unter „Eingreifen".`
+          ? `. Kritisch: unter ${KRITISCH_KM} km und über ${KRITISCH_FRP_MW} MW. Das System schaltet nicht selbst — der Not-Aus für ${feld} sitzt an der Feldkarte im Lageplan.`
           : `. Kein Handlungsbedarf: kritisch wird es erst unter ${KRITISCH_KM} km und über ${KRITISCH_FRP_MW} MW.`),
   });
 }

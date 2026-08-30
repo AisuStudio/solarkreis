@@ -1,12 +1,20 @@
 "use client";
 
 /*
-  Schritt 6b: die Bedienung.
+  Schritt 6b: der Nachweis.
 
-  ACHTUNG beim Lesen: für diesen Block gibt es kein Wireframe. Sollwert-
-  Bedienung, Bestätigung und Not-Aus hat niemand gezeichnet — die Form unten
-  ist meine Entscheidung, nicht Doms. Die Liste steht in
-  docs/erfundene-entscheidungen.md und ist ausdrücklich zum Umwerfen da.
+  Hier standen bis zum 30.08. die Bedienelemente. Sie sitzen jetzt in der
+  Schaltwarte über der Feldkarte im Lageplan — ansehen und schalten am selben
+  Ort. Geblieben ist alles, was man danach nachlesen will: was der Wächter
+  gesagt hat, was die Geräte einzeln machen, was passiert ist.
+
+  Die Geräteebene bleibt bewusst hier und wandert nicht mit nach oben. Sieben
+  Zeilen mit je vier Stufen sprengen eine Warte, die über einer Karte
+  aufgeht — und sie ist die Detailansicht, nicht der schnelle Griff.
+
+  ACHTUNG beim Lesen: für diesen Block gibt es kein Wireframe. Die Form ist
+  meine Entscheidung, nicht Doms; die Liste steht in
+  docs/erfundene-entscheidungen.md und ist zum Umwerfen da.
 
   Was NICHT erfunden ist, weil es feststand:
   - fail-closed: die Antwort des Wächters steht immer da, auch bei Erfolg
@@ -42,34 +50,28 @@ export function Schreibpfad({
   laeuft: boolean;
   antwort: Command | null;
 }) {
-  const [notAusFuer, setNotAusFuer] = useState<string | null>(null);
   /* Welche Felder ihre Geräte zeigen. Ein Set, weil man zwei Felder
      nebeneinander vergleichen will — ein einzelner offener Eintrag würde
      genau das verhindern. Zugeklappt beim Laden: sieben Geräte mit je vier
      Knöpfen sind die Antwort auf eine Frage, die man erst stellen muss. */
   const [geraeteOffen, setGeraeteOffen] = useState<Set<string>>(new Set());
 
-  /* Nach jedem Absenden ist die Not-Aus-Rückfrage erledigt — egal wie der
-     Wächter entschieden hat. */
-  const abschicken = (body: Record<string, unknown>) => {
-    senden(body);
-    setNotAusFuer(null);
-  };
 
   return (
-    <section style={{ padding: "40px", background: "var(--color-bg)" }} aria-labelledby="eingreifen">
+    <section style={{ padding: "40px", background: "var(--color-bg)" }} aria-labelledby="nachweis">
       <div className="sk-mono-eyebrow" style={{ color: "var(--color-muted)" }}>
         Schreibpfad
       </div>
-      <h2 id="eingreifen" className="sk-titel-abschnitt" style={{ marginTop: 4 }}>
-        Eingreifen
+      <h2 id="nachweis" className="sk-titel-abschnitt" style={{ marginTop: 4 }}>
+        Was dabei passiert ist
       </h2>
       <p className="sk-text-fliess" style={{ color: "var(--color-muted)", maxWidth: 620, marginTop: 8 }}>
-        Jede Anforderung geht durch den Wächter. Was er sagt, steht darunter — auch
-        wenn er zustimmt. Abgelehnte Kommandos landen genauso im Log wie ausgeführte.
+        Geschaltet wird oben an der Feldkarte. Jede Anforderung geht durch den Wächter;
+        was er sagt, steht hier — auch wenn er zustimmt. Abgelehnte Kommandos landen
+        genauso im Log wie ausgeführte.
       </p>
 
-      <Mandant z={z} laeuft={laeuft} senden={abschicken} />
+      <Mandant z={z} laeuft={laeuft} senden={senden} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20, marginTop: 24 }}>
         {z.parks.map((p) => {
@@ -89,7 +91,7 @@ export function Schreibpfad({
           return (
             <div
               key={p.park.id}
-              id={`eingreifen-${p.park.id}`}
+              id={`nachweis-${p.park.id}`}
               onMouseEnter={() => onFeld(p.park.id)}
               onMouseLeave={() => onFeld(null)}
               /* onFocus/onBlur steigen in React auf, deshalb genügt der
@@ -120,65 +122,16 @@ export function Schreibpfad({
                 {offline && " · offline"}
               </div>
 
-              <div className="sk-mono-eyebrow" style={{ color: "var(--color-muted)", marginTop: 14 }}>
-                Sollwert setzen
-              </div>
-              <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
-                {STUFEN.map(([v, label]) => (
-                  <Knopf
-                    key={v}
-                    aktiv={sollwert !== null && Math.abs(sollwert - v) < 0.001}
-                    disabled={laeuft}
-                    onClick={() => abschicken({ action: "setpoint_setzen", park_id: p.park.id, value: v })}
-                  >
-                    {label}
-                  </Knopf>
-                ))}
-              </div>
-
-              <div style={{ display: "flex", gap: 6, marginTop: 12, flexWrap: "wrap" }}>
-                <Knopf disabled={laeuft} onClick={() => abschicken({ action: "freigeben", park_id: p.park.id })}>
-                  Freigeben
-                </Knopf>
-
-                {notAusFuer === p.park.id ? (
-                  <>
-                    <button
-                      type="button"
-                      disabled={laeuft}
-                      onClick={() => abschicken({ action: "not_aus", park_id: p.park.id, bestaetigt: true })}
-                      className="sk-text-titel"
-                      style={{
-                        /* Die dokumentierte Ausnahme: Datenfarbe auf einem
-                           Bedienelement. strawberry-5 mit vanilla-Label misst
-                           4,31:1 — das klärt AA nur als Großtext, deshalb ist
-                           das Label auf >= 19 px fett festgelegt.
-                           Genommen wird Stufe 05 der Skala. Die stand beim
-                           Schreiben dieser Zeile auf 20 px und liegt nach der
-                           Neubewertung der Skala auf 24 — die Auflage bleibt
-                           damit erfüllt, mit mehr Luft als vorher. Die Stufe
-                           ist hier das Verlässliche, nicht die Zahl. */
-                        fontSize: "var(--sk-fs-05)",
-                        background: "var(--sk-estop-bg)",
-                        color: "var(--sk-estop-label)",
-                        border: "2px solid var(--color-text)",
-                        borderRadius: "var(--radius-sm)",
-                        padding: "8px 14px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Wirklich stilllegen
-                    </button>
-                    <Knopf disabled={laeuft} onClick={() => setNotAusFuer(null)}>
-                      Abbrechen
-                    </Knopf>
-                  </>
-                ) : (
-                  <Knopf disabled={laeuft} onClick={() => setNotAusFuer(p.park.id)} kritisch>
-                    Not-Aus
-                  </Knopf>
-                )}
-              </div>
+              {/* Die vier Stufen, Freigeben und Not-Aus standen hier bis zum
+                  30.08. Sie sind entfallen, weil dieselben Knöpfe jetzt über
+                  der Feldkarte im Lageplan aufgehen — ansehen und schalten am
+                  selben Ort. Eine Bedienung an zwei Stellen ist keine
+                  Doppelsicherung, sondern zwei Orte, an denen man nachsehen
+                  muss, was gerade gilt.
+                  Möglich wurde das erst dadurch, dass die Feldkarte nicht mehr
+                  nur auf den Zeiger reagiert: sie ist anklickbar, antabbar und
+                  schließt auf Escape. Ohne das hätte dieser Schnitt die
+                  Bedienung für Touch und Tastatur ersatzlos gelöscht. */}
 
               <Geraeteliste
                 p={p}
@@ -191,7 +144,7 @@ export function Schreibpfad({
                   })
                 }
                 laeuft={laeuft}
-                senden={abschicken}
+                senden={senden}
               />
             </div>
           );
@@ -308,13 +261,11 @@ function Knopf({
   onClick,
   disabled,
   aktiv,
-  kritisch,
 }: {
   children: React.ReactNode;
   onClick: () => void;
   disabled?: boolean;
   aktiv?: boolean;
-  kritisch?: boolean;
 }) {
   return (
     <button
@@ -325,12 +276,11 @@ function Knopf({
       className="sk-text-titel-klein"
       style={{
         background: aktiv ? "var(--color-text)" : "var(--color-bg)",
-        /* Die Schrift bleibt Ink, auch beim kritischen Knopf: strawberry-5 auf
-           Vanilla misst 4,31:1 und verfehlt die 4,5 für Fließtext knapp. Das
-           Signal trägt der Rahmen (4,31 reicht für Nicht-Text, gefordert 3:1)
-           und das Wort selbst — Farbe war hier ohnehin nie das einzige Signal. */
+        /* Der kritische Zweig ist entfallen: der Not-Aus sitzt jetzt in der
+           Schaltwarte über der Feldkarte. Hier bedient nur noch die
+           Geräteebene, und die kennt keine kritische Aktion. */
         color: aktiv ? "var(--color-bg)" : "var(--color-text)",
-        border: `${kritisch ? "2px" : "1px"} solid ${kritisch ? "var(--sk-crit)" : "var(--color-muted)"}`,
+        border: "1px solid var(--color-muted)",
         borderRadius: "var(--radius-sm)",
         padding: "8px 12px",
         minHeight: 24,
