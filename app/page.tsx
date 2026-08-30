@@ -130,8 +130,13 @@ export default function Startseite() {
 
         <Abschnitt n="03" t="Der Sprint">
           <p className="sk-text-fliess" style={{ color: "var(--color-muted)", maxWidth: "56ch" }}>
+            {/* „nie" stand hier zuerst und war schlicht falsch — der Schreibpfad
+                hat gar kein Wireframe, und die neue Schriftskala steht bislang
+                nur im Code. Auf einer Seite, die Herkunft an jeden Wert
+                schreibt, ist eine absolute Behauptung die teuerste Sorte
+                Ungenauigkeit. */}
             Gebaut mit Claude Code und dem Figma-MCP. Entwurf und Code entstehen im selben
-            Werkzeug, deshalb sind Wireframe und Repo nie auseinandergelaufen.
+            Werkzeug, deshalb sind Wireframe und Repo kaum auseinandergelaufen.
           </p>
           <ol
             style={{
