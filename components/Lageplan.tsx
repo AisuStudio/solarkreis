@@ -21,7 +21,7 @@
   Fokus zählt wie Zeiger: die Karten sind Knöpfe, nicht Divs.
 */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Zustand } from "@/lib/zustand";
 import { HQ } from "@/lib/seed";
 
@@ -295,24 +295,19 @@ export function Lageplan({
                   if (!an) setNotAus(null);
                 }}
                 panel={
-                  feldAktiv === f.park.id
-                    ? {
-                        hoehe: 128,
-                        inhalt: (
-                          <Schaltwarte
-                            park={f}
-                            laeuft={laeuft}
-                            notAusOffen={notAus === f.park.id}
-                            oeffneNotAus={() => setNotAus(f.park.id)}
-                            schliesseNotAus={() => setNotAus(null)}
-                            senden={(body: Record<string, unknown>) => {
-                              senden(body);
-                              setNotAus(null);
-                            }}
-                          />
-                        ),
-                      }
-                    : null
+                  feldAktiv === f.park.id ? (
+                    <Schaltwarte
+                      park={f}
+                      laeuft={laeuft}
+                      notAusOffen={notAus === f.park.id}
+                      oeffneNotAus={() => setNotAus(f.park.id)}
+                      schliesseNotAus={() => setNotAus(null)}
+                      senden={(body: Record<string, unknown>) => {
+                        senden(body);
+                        setNotAus(null);
+                      }}
+                    />
+                  ) : null
                 }
                 titel={f.park.name}
                 eyebrow={undefined}
@@ -423,6 +418,63 @@ function Schaltwarte({
   );
 }
 
+/*
+  Die Hülle der Schaltwarte im SVG.
+
+  foreignObject wächst nicht mit seinem Inhalt — es schneidet ab, was nicht
+  in die angegebene Höhe passt. Zuerst stand hier eine feste 128, und genau
+  das ist passiert: bei 190 px Breite umbrechen die vier Stufen in zwei
+  Reihen, „Freigeben" und „Not-Aus" waren halbiert.
+
+  Eine größere feste Zahl wäre derselbe Fehler mit anderem Wert gewesen. Die
+  Höhe wird deshalb am gerenderten Inhalt gemessen. Das hält auch, wenn sich
+  die Schriftgröße wieder ändert — heute ist das schon einmal passiert.
+
+  Bis zur ersten Messung steht eine Schätzung, sonst blitzt beim Aufgehen
+  eine Höhe von 0 auf.
+*/
+function Warte({
+  y,
+  h,
+  w,
+  children,
+}: {
+  y: number;
+  h: number;
+  w: number;
+  children: React.ReactNode;
+}) {
+  const [hoehe, setHoehe] = useState(150);
+  const box = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const messen = () => setHoehe(Math.ceil(el.getBoundingClientRect().height) + 2);
+    messen();
+    const beobachter = new ResizeObserver(messen);
+    beobachter.observe(el);
+    return () => beobachter.disconnect();
+  }, []);
+
+  /* Nach unten, solange dort Platz ist — sonst nach oben. Die Lage der
+     Knoten kommt aus echten Koordinaten, ein Park weiter südlich schöbe die
+     Warte über den Rand, und dort ist sie abgeschnitten. */
+  const unten = y + h / 2 + 6 + hoehe <= HOEHE - 8;
+
+  return (
+    <foreignObject
+      x={-4}
+      y={unten ? h + 6 : -(hoehe + 6)}
+      width={w + 8}
+      height={hoehe}
+      style={{ overflow: "visible" }}
+    >
+      <div ref={box}>{children}</div>
+    </foreignObject>
+  );
+}
+
 /** Knopf der Schaltwarte. Dunkler Grund, sonst dieselbe Bauart wie unten. */
 function Taste({
   children,
@@ -530,7 +582,7 @@ function Knoten({
   /* Wird innerhalb derselben Gruppe gezeichnet und schließt bündig an den
      Knoten an. Beides ist nötig: außerhalb der Gruppe würde der Zeiger sie
      beim Hinüberfahren verlieren, mit Lücke ebenso. */
-  panel?: { hoehe: number; inhalt: React.ReactNode } | null;
+  panel?: React.ReactNode | null;
 }) {
   /* „dunkel" hieß früher: dieser eine Knoten ist anders als die anderen.
      Auf der dunklen Insel sind alle Knoten gleich gebaut — die Marke
@@ -555,28 +607,7 @@ function Knoten({
         stroke={hervor ? "var(--text)" : dunkel ? "var(--leise)" : "var(--rahmen)"}
         strokeWidth={hervor ? 2 : 1}
       />
-      {panel &&
-        (() => {
-          /* Normalerweise klappt die Warte nach unten auf. Bei den heutigen
-             drei Feldern passt das — Feld Süd endet bei 620 von 720. Die
-             Lage der Knoten kommt aber aus echten Koordinaten: ein Park
-             weiter südlich schöbe sie über den Rand, und dort ist sie
-             abgeschnitten, weil das SVG nicht überläuft.
-             Deshalb die Prüfung statt des Verlassens auf den Zufall. */
-          const unten = y + h / 2 + 6 + panel.hoehe <= HOEHE - 8;
-          return (
-            <foreignObject
-              x={-4}
-              y={unten ? h : -(panel.hoehe + 6)}
-              width={w + 8}
-              height={panel.hoehe + 6}
-            >
-              <div style={{ paddingTop: unten ? 6 : 0, paddingBottom: unten ? 0 : 6 }}>
-                {panel.inhalt}
-              </div>
-            </foreignObject>
-          );
-        })()}
+      {panel && <Warte y={y} h={h} w={w}>{panel}</Warte>}
       <foreignObject x="0" y="0" width={w} height={h}>
         <div style={{ padding: "10px 12px", color: vordergrund }}>
           {eyebrow && (
