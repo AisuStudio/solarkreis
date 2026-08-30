@@ -140,9 +140,11 @@ export function Schreibpfad({
                            Bedienelement. strawberry-5 mit vanilla-Label misst
                            4,31:1 — das klärt AA nur als Großtext, deshalb ist
                            das Label auf >= 19 px fett festgelegt.
-                           Genommen wird Stufe 05 der Skala (20 px): 19 stand
-                           neben der Skala, und eine Auflage rechtfertigt keine
-                           eigene Größe, wenn eine passende schon da ist. */
+                           Genommen wird Stufe 05 der Skala. Die stand beim
+                           Schreiben dieser Zeile auf 20 px und liegt nach der
+                           Neubewertung der Skala auf 24 — die Auflage bleibt
+                           damit erfüllt, mit mehr Luft als vorher. Die Stufe
+                           ist hier das Verlässliche, nicht die Zahl. */
                         fontSize: "var(--sk-fs-05)",
                         background: "var(--sk-estop-bg)",
                         color: "var(--sk-estop-label)",

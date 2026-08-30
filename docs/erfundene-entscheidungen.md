@@ -46,6 +46,8 @@ sehen könnte. Zweitens sind diskrete Stufen im Log lesbar: „setpoint setzen a
 
 *Alternative:* Schieberegler mit Rastung, falls die Feinsteuerung später zählt.
 
+**Bestätigt am 30.08.** Ohne Änderung übernommen.
+
 ---
 
 ### 3 · Not-Aus in zwei Schritten am selben Ort, kein Dialogfenster
