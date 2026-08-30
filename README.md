@@ -7,35 +7,37 @@ Prototyp in ein System mit sicherem Schreibzugriff und automatisierten Abläufen
 
 Zwei Bereiche: **Simulation** und **Dokumentation**.
 
-> **Wo das Stück gerade wirklich steht.** Vorgesehen sind drei echte Quellen: Wetter
-> (Open-Meteo), Strompreis (aWATTar), aktive Feuer (NASA FIRMS). **Angeschlossen ist
-> bislang keine davon.** Im Code steht kein einziger Netzaufruf; gerechnet wird auf
-> einem deterministischen Rückfall aus Solargeometrie und Temperaturmodell. Die
-> Oberfläche schreibt an jede betroffene Stelle „simuliert" — sie behauptet nichts,
-> was der Code nicht tut. Diese Zeile verschwindet, wenn die Schritte 3, 5 und 8 stehen.
+> **Alle drei echten Quellen hängen** (Stand 30.08.2026): Wetter über
+> [Open-Meteo](https://open-meteo.com), Strompreis über [aWATTar](https://www.awattar.de),
+> aktive Feuer über [NASA FIRMS](https://firms.modaps.eosdis.nasa.gov). Fällt eine aus,
+> rechnet ein deterministischer Rückfall — und die Herkunft der betroffenen Werte wechselt
+> sichtbar auf „simuliert". Nachprüfbar unter `/datenquellen` und mit
+> `node scripts/pruefen.mjs`.
 
 **Simuliert sind** Parks, Geräte und Messwerte — letztere abgeleitet aus der
 Einstrahlung plus Rauschen. Die Oberfläche kennzeichnet das an jeder Stelle.
 
 ## Stand
 
-Zwei von zehn Schritten abgeschlossen, drei angefangen.
+Acht von zehn Schritten abgeschlossen.
 
 | | Schritt | |
 |---|---|---|
-| 1 | Gerüst + waffle-Tokens | ✓ Kontrollseite `/ds`, dazu die Typo-Ebene mit neun Stufen und zwanzig Stilen |
+| 1 | Gerüst + waffle-Tokens | ✓ Kontrollseite `/ds`, dazu neun Größenstufen und zwanzig Textstile |
 | 2 | Datenmodell, Event-Store, Simulation | ✓ Kontrolle über `/api/state` |
-| 3 | Open-Meteo | ○ |
-| 4 | Geräteformate → Normalisierung → Übersicht | ◐ Logik fertig, Oberfläche als erste Fassung unter `/simulation` |
-| 5 | aWATTar + Statusleiste | ○ Leiste steht, Preis und Ertrag bleiben absichtlich leer |
-| 6 | Schreibpfad fail-closed | ◐ `storageGuard()` gebaut, aus dem Produkt noch nicht aufgerufen |
-| 7 | Kreis-Regel + Alerts | ◐ `ladder()` gebaut und geprüft, bisher nur über `/api/storage` |
-| 8 | NASA FIRMS | ○ Schlüssel liegt vor, Code nicht |
-| 9 | Datenquellen-Seite | ○ |
+| 3 | Open-Meteo | ✓ Stundenwerte für die echten Koordinaten der drei Felder |
+| 4 | Geräteformate → Normalisierung → Übersicht | ◐ Logik fertig, Oberfläche unter `/simulation`; Geometrie noch nicht sauber |
+| 5 | aWATTar + Statusleiste | ✓ Preis und Ertrag, Ertrag darf negativ werden |
+| 6 | Schreibpfad fail-closed | ✓ Wächter, Kommando-Route, Bedienung; erfundene Teile in [docs/erfundene-entscheidungen.md](docs/erfundene-entscheidungen.md) |
+| 7 | Kreis-Regel + Alerts | ✓ die Automatik geht durch denselben Wächter wie ein Mensch |
+| 8 | NASA FIRMS | ✓ mit begründeter Schwelle statt rohem Feed |
+| 9 | Datenquellen-Seite | ✓ `/datenquellen` |
 | 10 | Dokumentationsseite | ○ Entwurf steht in Figma, `/doku` ist noch 404 |
 
 Außerhalb der Reihenfolge: `lib/glare.ts` als Beleg für eine Absage (siehe unten),
-und ein Hero-Prototyp als eine Datei unter `public/hero.html`.
+ein Hero-Prototyp als eine Datei unter `public/hero.html`, und `scripts/pruefen.mjs` —
+48 Prüfungen gegen die laufende Instanz, vom Anteil-je-Park bis zur Frage, ob die
+Normalisierung das überlebt, was das Gerät wirklich gesendet hat.
 
 Feld Süd liegt seit der Autobahn-Frage an einer realen Ackerfläche bei Deutsch
 Bork, 221 m von der A9 — innerhalb des 500-m-Korridors, den das EEG für

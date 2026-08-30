@@ -55,8 +55,8 @@ export default function DesignSystemPage() {
             <div key={token} style={{ border: "1px solid var(--color-border)", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
               <div style={{ height: 44, background: `var(${token})`, borderBottom: "1px solid var(--color-border)" }} />
               <div style={{ padding: "8px 10px" }}>
-                <div className="sk-val" style={{ fontSize: 11 }}>{token}</div>
-                <div style={{ fontSize: 11, color: "var(--color-muted)" }}>{role} · {swatch}</div>
+                <div className="sk-val" style={{ fontSize: 12 }}>{token}</div>
+                <div style={{ fontSize: 12, color: "var(--color-muted)" }}>{role} · {swatch}</div>
               </div>
             </div>
           ))}
@@ -138,7 +138,7 @@ export default function DesignSystemPage() {
               <tr key={r.name}>
                 <td className="sk-val">{r.name}</td>
                 {r.levels.map((hex, i) => (
-                  <td key={hex} style={{ background: hex, color: "var(--color-blueberry)", fontFamily: "var(--font-tertiary)", fontSize: 11 }}>
+                  <td key={hex} style={{ background: hex, color: "var(--color-blueberry)", fontFamily: "var(--font-tertiary)", fontSize: 12 }}>
                     {["11.52 / 9.44 / 8.74 / 5.21 / 3.29", "12.16 / 10.93 / 9.25 / 7.08 / 5.19",
                       "8.79 / 6.63 / 5.10 / 4.28 / 3.19", "9.87 / 7.76 / 6.19 / 4.88 / 3.84"
                      ][RAMPS.indexOf(r)].split(" / ")[i]}

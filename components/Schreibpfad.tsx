@@ -115,8 +115,11 @@ export function Schreibpfad({ z, nachKommando }: { z: Zustand; nachKommando: () 
                         /* Die dokumentierte Ausnahme: Datenfarbe auf einem
                            Bedienelement. strawberry-5 mit vanilla-Label misst
                            4,31:1 — das klärt AA nur als Großtext, deshalb ist
-                           das Label auf 19px fett festgelegt. */
-                        fontSize: 19,
+                           das Label auf >= 19 px fett festgelegt.
+                           Genommen wird Stufe 05 der Skala (20 px): 19 stand
+                           neben der Skala, und eine Auflage rechtfertigt keine
+                           eigene Größe, wenn eine passende schon da ist. */
+                        fontSize: "var(--sk-fs-05)",
                         background: "var(--sk-estop-bg)",
                         color: "var(--sk-estop-label)",
                         border: "2px solid var(--color-text)",
