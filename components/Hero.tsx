@@ -52,7 +52,7 @@ const LOG: [string, string][] = [
   ["auffaelligkeit", "Feuer"],
 ];
 
-export function Hero() {
+export function Hero({ kopf = false }: { kopf?: boolean } = {}) {
   const wurzel = useRef<HTMLElement>(null);
   const [beat, setBeat] = useState(0);
   const [ruhe, setRuhe] = useState(false);
@@ -116,7 +116,7 @@ export function Hero() {
   return (
     <section
       ref={wurzel}
-      className="sk-hero"
+      className={kopf ? "sk-hero sk-hero--kopf" : "sk-hero"}
       data-beat={ruhe ? "ruhe" : beat + 1}
       aria-labelledby="hero-bu"
       aria-describedby="hero-lang"

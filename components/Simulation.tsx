@@ -11,6 +11,7 @@
 */
 
 import { useEffect, useState } from "react";
+import { useKommando } from "./useKommando";
 import type { Zustand } from "@/lib/zustand";
 import { StatusBar } from "./StatusBar";
 import { Lageplan } from "./Lageplan";
@@ -26,32 +27,70 @@ const TAKT_MS = 2000;
   Farbe ist nie das einzige Signal: jede Zeile trägt ihr Wort (Hinweis,
   Warnung, Kritisch) im Text.
 */
-function Alarmstreifen({ z }: { z: Zustand }) {
+function Alarmstreifen({ z, onFeld }: { z: Zustand; onFeld: (id: string) => void }) {
+  /* Der Streifen war ein gelber Block über die volle Breite — 80px
+     leuchtende Fläche zwischen dunkler Statusleiste und dunkler Insel. Er
+     hat die Kopfzone in vier Bänder zerlegt und war lauter als der Alarm,
+     den er meldet.
+
+     Jetzt trägt er denselben Grund wie der Rest der Kopfzone; die Schwere
+     steht in einer Kante links und im Wort. Farbe war hier ohnehin nie das
+     einzige Signal — jede Zeile nennt ihre Stufe ausgeschrieben. */
   const schwere = z.alarme[0]?.severity;
-  const fuellung =
-    schwere === "kritisch" ? "var(--sk-crit-fill)"
-    : schwere === "warnung" ? "var(--sk-write-fill)"
-    : "var(--sk-read-fill)";
+  const kante =
+    schwere === "kritisch" ? "var(--krit)"
+    : schwere === "warnung" ? "var(--write)"
+    : "var(--read)";
 
   return (
     <div
       role="status"
       style={{
         padding: "10px 40px",
-        background: z.alarme.length ? fuellung : "var(--color-surface)",
-        color: z.alarme.length ? "var(--sk-on-fill)" : "var(--color-muted)",
+        background: "var(--grund)",
+        color: "var(--text)",
+        borderLeft: `4px solid ${z.alarme.length ? kante : "var(--rahmen)"}`,
         display: "flex",
         gap: 16,
         alignItems: "baseline",
         flexWrap: "wrap",
       }}
     >
-      <span className="sk-mono-eyebrow">
+      <span className="sk-mono-eyebrow" style={{ color: "var(--leise)" }}>
         Kreis-Regel {z.regel.ausgewertet ? "aktiv" : "wartet"}
       </span>
       <span className="sk-text-kompakt">
         {z.alarme.length ? `${z.alarme[0].severity} · ${z.alarme[0].message}` : z.regel.grund}
       </span>
+      {/* Der Weg zum Schalter. Ein Alarm, der ein Feld nennt, muss sagen, wo
+          man für dieses Feld eingreift — sonst steht der Satz da und die
+          Frage „und wo?" bleibt offen. Der Verweis erscheint bei jedem Alarm
+          mit Feldbezug, nicht nur beim kritischen: er sagt „hier entlang",
+          nicht „handle jetzt". */}
+      {/* Der Verweis zeigte auf den Abschnitt unten, solange dort die Knöpfe
+          standen. Sie sitzen jetzt an der Feldkarte im Lageplan — also führt
+          er dorthin: er hebt das betroffene Feld hervor und klappt seine
+          Schaltwarte auf. Ein Sprung nach unten wäre jetzt der Weg weg von
+          der Bedienung. */}
+      {z.alarme[0]?.park_id && (
+        <button
+          type="button"
+          className="sk-text-titel-klein"
+          onClick={() => onFeld(z.alarme[0].park_id!)}
+          style={{
+            background: "none",
+            border: 0,
+            padding: "4px 0",
+            minHeight: 24,
+            color: "var(--akzent)",
+            textDecoration: "underline",
+            cursor: "pointer",
+            font: "inherit",
+          }}
+        >
+          Betroffenes Feld zeigen →
+        </button>
+      )}
       {z.regel.gehandelt.length > 0 && (
         <span className="sk-mono-daten">{z.regel.gehandelt.join(" · ")}</span>
       )}
@@ -66,6 +105,20 @@ export function Simulation({ initial }: { initial: Zustand }) {
   /* Nach einem Kommando sofort neu holen statt auf den Takt zu warten —
      sonst sieht der Bediener seine eigene Wirkung erst zwei Sekunden später. */
   const [anstoss, setAnstoss] = useState(0);
+
+  /* Welches Feld gerade angesehen wird. Der Zustand liegt hier, weil ihn
+     zwei Geschwister brauchen: der Lageplan zeigt das Feld, „Eingreifen"
+     bedient es. Wer im Plan darüberfährt, sieht unten die zugehörige Karte
+     aufleuchten — und wer unten eine Karte anfasst oder antabbt, sieht oben
+     das Feld. Der Weg bleibt zwei Blicke lang, aber man verliert das Feld
+     dabei nicht. */
+  const [feldAktiv, setFeldAktiv] = useState<string | null>(null);
+
+  /* Ein Weg zum Wächter, zwei Bedienorte: die Schaltwarte über der Feldkarte
+     im Lageplan und der Abschnitt „Eingreifen" darunter. */
+  const { senden, laeuft, antwort } = useKommando(z.operatorId, () =>
+    setAnstoss((n) => n + 1),
+  );
 
   useEffect(() => {
     let lebt = true;
@@ -94,8 +147,15 @@ export function Simulation({ initial }: { initial: Zustand }) {
 
   return (
     <>
-      <StatusBar z={z} />
-      {fehler && (
+      {/* Die Kopfzone: Statusleiste, Alarmstreifen und Lageplan teilen sich
+          einen Grund und liegen deshalb in einem Element. Die dunkle Palette
+          hängt an dieser Klasse — ohne den gemeinsamen Rahmen löst
+          var(--grund) in der Statusleiste nicht auf.
+          „Eingreifen" darunter bleibt hell: eine dunkle Insel in hellem
+          Umfeld, dieselbe Aufteilung wie auf der Introseite. */}
+      <div className="sk-dunkelzone">
+        <StatusBar z={z} />
+        {fehler && (
         <div
           role="status"
           className="sk-text-kompakt"
@@ -109,9 +169,23 @@ export function Simulation({ initial }: { initial: Zustand }) {
           erfolgreiche Abruf von {new Date(z.ts).toLocaleTimeString("de-DE")}.
         </div>
       )}
-      <Alarmstreifen z={z} />
-      <Lageplan z={z} />
-      <Schreibpfad z={z} nachKommando={() => setAnstoss((n) => n + 1)} />
+        <Alarmstreifen z={z} onFeld={setFeldAktiv} />
+        <Lageplan
+          z={z}
+          feldAktiv={feldAktiv}
+          onFeld={setFeldAktiv}
+          senden={senden}
+          laeuft={laeuft}
+        />
+      </div>
+      <Schreibpfad
+        z={z}
+        feldAktiv={feldAktiv}
+        onFeld={setFeldAktiv}
+        senden={senden}
+        laeuft={laeuft}
+        antwort={antwort}
+      />
     </>
   );
 }

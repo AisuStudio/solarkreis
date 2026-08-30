@@ -8,6 +8,11 @@
 
   Klickfläche: der Text allein wäre 14px hoch. 2.5.8 verlangt 24×24, deshalb
   sitzt das Padding am Link, nicht am Container.
+
+  Die Leiste klebt oben. Sie ist deckend Ink, deshalb bleibt sie über allem
+  lesbar, was unter ihr durchläuft — ein Schatten oder eine Trennlinie wäre
+  Dekoration ohne Aufgabe. Auf der Introseite schließt der dunkle Hero
+  direkt an; beide zusammen lesen als ein Kopfbereich, und das ist gewollt.
 */
 
 import Link from "next/link";
@@ -26,8 +31,11 @@ export function TopNav({ aktiv }: { aktiv?: string }) {
         alignItems: "center",
         gap: 28,
         height: 56,
-        padding: "0 40px",
+        padding: "0 var(--gutter)",
         background: "var(--color-text)",
+        position: "sticky",
+        top: 0,
+        zIndex: 50,
       }}
     >
       <Link
@@ -45,7 +53,7 @@ export function TopNav({ aktiv }: { aktiv?: string }) {
             key={p.href}
             href={p.href}
             aria-current={ist ? "page" : undefined}
-            className="sk-text-label"
+            className="sk-text-titel-klein"
             style={{
               color: ist ? "var(--color-bg)" : "var(--color-hazelnut)",
               textDecoration: "none",

@@ -13,18 +13,38 @@
   --font-primary Public Sans (Fließtext), --font-secondary Stoke
   (Überschriften), --font-tertiary iA Writer Mono (Zahlen und Labels).
 
-  Untergrenze ist 12px. Das ist keine WCAG-Vorgabe — WCAG kennt keine
+  Untergrenze war 12px. Das ist keine WCAG-Vorgabe — WCAG kennt keine
   Mindestgröße — sondern eine Projektregel, nachgemessen an den Entwürfen.
+
+  ── Neubewertung der Werte (Entwurf, Figma-Abgleich steht aus) ──────────
+  Gemessen an der ausgelieferten Introseite: 53 von 63 Textelementen lagen
+  unter 16px, der Fließtext bei 14, die Knöpfe bei 12. Die Skala stammt aus
+  dem Dashboard-Wireframe, wo Dichte richtig ist — auf einer Seite, die
+  gelesen werden will, ist sie es nicht.
+
+  Dazu ein Fehler in der Skala selbst: 12 · 13 · 14 · 15 sind vier Stufen im
+  Abstand von einem Pixel. Vier Stufen, die niemand auseinanderhält, sind
+  keine vier Stufen. Zwischen 15 und 20 lag dagegen nichts — genau dort, wo
+  Lesegrößen liegen.
+
+  Die neun Stufen bleiben neun Stufen, damit Variablennamen und Figma-
+  Bindung unangetastet bleiben. Nur die Werte sind neu. Fließtext steht auf
+  18 — das ist Doms Vorgabe, nicht meine Herleitung. Die Stufen darüber sind
+  daran ausgerichtet, damit kein Ein-Pixel-Abstand zurückkommt:
+
+      13 · 15 · 18 · 20 · 24 · 28 · 32 · 40 · 52
+
+  Eine Ausnahme steht weiter unten bei .sk-mono-wortmarke.
 */
 
 :root {
-  --sk-fs-01: 12px;  /* Label       */
-  --sk-fs-02: 13px;  /* Kompakt     */
-  --sk-fs-03: 14px;  /* Text        */
-  --sk-fs-04: 15px;  /* Betont      */
-  --sk-fs-05: 20px;  /* Groß        */
-  --sk-fs-06: 26px;  /* Zwischentitel */
-  --sk-fs-07: 28px;  /* Abschnitt   */
+  --sk-fs-01: 13px;  /* Label       */
+  --sk-fs-02: 15px;  /* Kompakt     */
+  --sk-fs-03: 18px;  /* Text        */
+  --sk-fs-04: 20px;  /* Betont      */
+  --sk-fs-05: 24px;  /* Groß        */
+  --sk-fs-06: 28px;  /* Zwischentitel */
+  --sk-fs-07: 32px;  /* Abschnitt   */
   --sk-fs-08: 40px;  /* Seitentitel */
   --sk-fs-09: 52px;  /* Schlagzeile */
 }
@@ -43,7 +63,11 @@
   font-variant-numeric: tabular-nums;
 }
 
-.sk-mono-wortmarke { font-size: var(--sk-fs-05); letter-spacing: .08em; line-height: 1.3; }
+/* Die eine Ausnahme von der Skala: Dom hat die Wortmarke in der Hauptnavi-
+   gation ausdrücklich auf 20 festgelegt. Stufe 05 ist inzwischen 22. Eine
+   gesetzte Entscheidung wiegt schwerer als die Glätte der Skala, deshalb
+   steht hier ein fester Wert statt einer Stufe. */
+.sk-mono-wortmarke { font-size: 20px; letter-spacing: .08em; line-height: 1.3; }
 .sk-mono-zahl      { font-size: var(--sk-fs-06); line-height: 1.3; }
 .sk-mono-betont    { font-size: var(--sk-fs-04); line-height: 1.3; }
 .sk-mono-kompakt   { font-size: var(--sk-fs-02); line-height: 1.4; }

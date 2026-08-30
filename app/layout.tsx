@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { Fusszeile } from "@/components/Fusszeile";
 
 /* waffle-Schriften, selbst gehostet. Die drei Variablennamen sind das, worauf
    waffles --font-primary / --font-secondary / --font-tertiary zeigen. */
@@ -44,7 +45,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     /* data-theme="light": v1 ist bewusst nur hell (siehe globals.css). */
     <html lang="de" data-theme="light" className={`${publicSans.variable} ${stoke.variable} ${iaMono.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Fusszeile />
+      </body>
     </html>
   );
 }
