@@ -13,8 +13,62 @@ Einstrahlung plus Rauschen. Die Oberfläche kennzeichnet das an jeder Stelle.
 
 ## Stand
 
-Schritt 1 von 10 der Build-Reihenfolge: Gerüst und Designebene stehen.
-`/ds` ist die Kontrollseite dafür.
+Schritt 2 von 10 der Build-Reihenfolge.
+
+1. ✓ Gerüst + waffle-Tokens — Kontrollseite `/ds`
+2. ✓ Datenmodell, Event-Store, Simulation — Kontrolle über `/api/state`
+3. … Open-Meteo end-to-end
+
+### Wie die Simulation rechnet
+
+Nicht kosmetisch, sondern physikalisch. `lib/solar.ts` bestimmt den Sonnenstand
+über Deklination, Zeitgleichung und Stundenwinkel und daraus die
+Klarhimmel-Einstrahlung (Kasten-Young für die Luftmasse, Meinel für die
+Schwächung). `lib/sim.ts` macht daraus Leistung:
+
+```
+Leistung = Kapazität × Anteil × Sollwert × (G/1000) × Temperaturverlust × Zustand
+```
+
+Der Temperaturverlust folgt dem NOCT-Modell mit −0,4 %/K über 25 °C — deshalb
+bringt ein heißer Julitag weniger als ein kühler Maitag mit gleicher Sonne.
+Gemessen am 30.08.: mitternachts 0 kW, mittags 32 MW bei 618 W/m², zur
+Sommersonnenwende 39,8 MW — also über der Netzgrenze von 38,88 MW, womit die
+Kreis-Regel in Schritt 7 tatsächlich auslöst.
+
+Der Zufall ist deterministisch (`lib/rng.ts`, Seed aus Gerät und Minute).
+Zwei Abrufe derselben Minute liefern denselben Wert — sonst zappelt die
+Anzeige, und auf Vercel erzählte jede Instanz etwas anderes.
+
+### Event Sourcing
+
+`lib/store.ts` ist append-only. Ein Sollwert ist kein Feld, das man setzt,
+sondern die Faltung über alle ausgeführten Kommandos. Das Audit-Log ist damit
+nicht nachträglich angeklebt — es *ist* der Zustand, und ein Kommando ohne
+Eintrag kann es nicht geben.
+
+Messwerte liegen bewusst **nicht** im Log, sondern werden auf Anfrage berechnet.
+Sieben Geräte im Sekundentakt wären 25.000 Einträge pro Stunde für null
+Erkenntnis. Ins Log kommt eine Messung nur, wenn sie etwas ausgelöst hat.
+
+Bewusste Grenze von v1: bei einem Kaltstart auf Vercel ist das Log leer.
+Kommandos überleben keinen Instanz-Neustart. Der Weg nach draußen wäre Supabase
+mit derselben append-only-Tabelle.
+
+### Normalisierung
+
+Der Kernbeleg. Die drei Formate aus dem Brief werden am **Ingest** vereinheitlicht,
+nicht in der Anzeige — `snapshot()` erzeugt den wahren Wert, verpackt ihn in die
+Herstellerform und normalisiert ihn zurück. Alles dahinter sieht nur noch kW und °C.
+
+| Format | Rohform | normalisiert |
+|---|---|---|
+| A | `{"outputKw":5845.4,"tempC":39}` | 5845.4 kW · 39.0 °C |
+| B | `{"power_w":4815000,"temperature":39}` | 4815.0 kW · 39.0 °C |
+| C | `{"payload":{"p":3597.6,"t":41}}` | 3597.6 kW · 41.0 °C |
+
+Die Umleitung über die Rohform ist keine Umständlichkeit: wer sie abkürzt, zeigt
+Werte an, die kein Gerät je gesendet hat. Geräte melden ganzzahlige Temperaturen.
 
 ## Stack
 
@@ -76,6 +130,14 @@ in 10 Tagen — auf NOAA-21, NOAA-20 und MODIS gleichermaßen. Europaweit im sel
 Zeitraum 112 an einem Tag. Der echte Feed ist über Deutschland also fast immer leer.
 Das ist keine Fehlfunktion, sondern der Normalzustand, und die Oberfläche zeigt ihn
 als solchen an.
+
+**Entscheidung dazu (Dom, 30.08.2026):** Der echte Feed läuft und zeigt seinen
+Normalzustand ehrlich an („keine aktiven Feuer im Umkreis, zuletzt geprüft 14:32").
+Daneben steht ein klar als *simuliert* gekennzeichneter Szenario-Knopf, der einen
+Hotspot einspielt — nur so ist der Eskalationspfad Waldbrand → verschärftes
+Monitoring → Not-Aus überhaupt vorführbar. Verworfen: Radius auf 300–500 km
+aufziehen („Waldbrand in der Nähe" bei 400 km ist eine unehrliche Behauptung) und
+die Parks nach Südeuropa verlegen (kostet aWATTar, das nur DE/AT abdeckt).
 
 Den FIRMS-Key gibt es kostenlos unter
 <https://firms.modaps.eosdis.nasa.gov/api/map_key/> — E-Mail eintragen, der Key
