@@ -93,6 +93,18 @@ verwässern und kein Wireframe eine Geräteebene vorsieht.
 *Alternative:* Ausklappen je Feld, sobald es einen Grund gibt, ein einzelnes
 Gerät anders zu fahren.
 
+**Umgeworfen am 30.08 — die Geräteebene ist gebaut.** Das war der Eintrag mit
+der schwächsten Begründung: es sprach nichts dagegen, es fehlte nur eine
+Zeichnung. Jede Feldkarte hat jetzt einen Aufklapper „N Geräte einzeln"; je
+Gerät stehen Herstellerformat, Anteil, Zustand, Sollwert und Leistung, dazu
+dieselben vier Stufen.
+
+Dabei ist ein Fehler aufgefallen, den erst die Geräteebene auslöst: die
+Kopfzeile las den Sollwert des Parks als `devices[0].setpoint`. Solange nur
+der Park bedienbar war, stimmten alle Geräte immer überein und das war eine
+zulässige Abkürzung. Jetzt steht dort entweder die Zahl, wenn sich alle einig
+sind, oder „gemischt (50 / 75 / 50 %)".
+
 ---
 
 ### 6 · Der Mandantenwechsel ist Text, kein Umschalter

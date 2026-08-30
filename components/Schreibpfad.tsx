@@ -41,6 +41,11 @@ export function Schreibpfad({
   const [antwort, setAntwort] = useState<{ command: Command } | null>(null);
   const [laeuft, setLaeuft] = useState(false);
   const [notAusFuer, setNotAusFuer] = useState<string | null>(null);
+  /* Welche Felder ihre Geräte zeigen. Ein Set, weil man zwei Felder
+     nebeneinander vergleichen will — ein einzelner offener Eintrag würde
+     genau das verhindern. Zugeklappt beim Laden: sieben Geräte mit je vier
+     Knöpfen sind die Antwort auf eine Frage, die man erst stellen muss. */
+  const [geraeteOffen, setGeraeteOffen] = useState<Set<string>>(new Set());
 
   async function senden(body: Record<string, unknown>) {
     setLaeuft(true);
@@ -75,7 +80,18 @@ export function Schreibpfad({
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20, marginTop: 24 }}>
         {z.parks.map((p) => {
-          const sollwert = p.devices[0]?.device.setpoint ?? 1;
+          /* Der Sollwert des Parks ist eine Ableitung, kein gespeicherter Wert:
+             gespeichert ist er je Gerät. Solange nur der Park bedienbar war,
+             stimmten alle Geräte immer überein und `devices[0]` war eine
+             zulässige Abkürzung. Mit der Geräteebene ist sie es nicht mehr —
+             die Zeile hätte den Sollwert des ersten Wechselrichters als den
+             des ganzen Feldes ausgegeben.
+             Deshalb: entweder sind sich alle einig, dann steht die Zahl da,
+             oder sie sind es nicht, dann steht „gemischt" da. Eine dritte
+             Möglichkeit gibt es nicht. */
+          const sollwerte = p.devices.map((d) => d.device.setpoint);
+          const einig = sollwerte.every((v) => Math.abs(v - sollwerte[0]) < 0.001);
+          const sollwert = einig ? (sollwerte[0] ?? 1) : null;
           const offline = p.devices.every((d) => d.device.status === "offline");
           return (
             <div
@@ -103,7 +119,11 @@ export function Schreibpfad({
             >
               <div className="sk-text-titel">{p.park.name}</div>
               <div className="sk-mono-daten" style={{ color: "var(--color-muted)" }}>
-                Sollwert {Math.round(sollwert * 100)} % · {p.devices.length} Geräte
+                Sollwert{" "}
+                {sollwert === null
+                  ? `gemischt (${sollwerte.map((v) => Math.round(v * 100)).join(" / ")} %)`
+                  : `${Math.round(sollwert * 100)} %`}{" "}
+                · {p.devices.length} Geräte
                 {offline && " · offline"}
               </div>
 
@@ -114,7 +134,7 @@ export function Schreibpfad({
                 {STUFEN.map(([v, label]) => (
                   <Knopf
                     key={v}
-                    aktiv={Math.abs(sollwert - v) < 0.001}
+                    aktiv={sollwert !== null && Math.abs(sollwert - v) < 0.001}
                     disabled={laeuft}
                     onClick={() => senden({ action: "setpoint_setzen", park_id: p.park.id, value: v })}
                   >
@@ -166,6 +186,20 @@ export function Schreibpfad({
                   </Knopf>
                 )}
               </div>
+
+              <Geraeteliste
+                p={p}
+                offen={geraeteOffen.has(p.park.id)}
+                umschalten={() =>
+                  setGeraeteOffen((alt) => {
+                    const neu = new Set(alt);
+                    neu.has(p.park.id) ? neu.delete(p.park.id) : neu.add(p.park.id);
+                    return neu;
+                  })
+                }
+                laeuft={laeuft}
+                senden={senden}
+              />
             </div>
           );
         })}
@@ -174,6 +208,105 @@ export function Schreibpfad({
       {antwort && <WaechterAntwort command={antwort.command} />}
       <Log z={z} />
     </section>
+  );
+}
+
+/*
+  Die Geräteebene.
+
+  Sie war die einzige Stelle, an der die Oberfläche weniger konnte als das
+  Modell darunter: `device_id` ist in der Route seit jeher optional, der
+  Wächter prüft sie mit, und die Faltung in store.ts filtert korrekt darauf.
+  Es fehlten nur die Knöpfe. Wer den Code las, fand eine Fähigkeit, die er im
+  Bild nicht wiederfand — und musste raten, ob sie trägt.
+
+  Zugeklappt beim Laden, weil sieben Geräte mit je vier Stufen die Aussage
+  der Feldebene erschlagen. Aufgeklappt steht je Gerät, was es unterscheidet:
+  das Herstellerformat, sein Anteil an der Feldleistung, sein Zustand.
+
+  Der Aufklapper ist ein Knopf mit aria-expanded und aria-controls, kein
+  angeklickter div. Ohne das weiß niemand, der nicht hinsieht, dass sich hier
+  etwas öffnen lässt.
+*/
+function Geraeteliste({
+  p,
+  offen,
+  umschalten,
+  laeuft,
+  senden,
+}: {
+  p: Zustand["parks"][number];
+  offen: boolean;
+  umschalten: () => void;
+  laeuft: boolean;
+  senden: (body: Record<string, unknown>) => void;
+}) {
+  const id = `geraete-${p.park.id}`;
+  return (
+    <div style={{ marginTop: 14, borderTop: "1px solid var(--color-surface)", paddingTop: 12 }}>
+      <button
+        type="button"
+        onClick={umschalten}
+        aria-expanded={offen}
+        aria-controls={id}
+        className="sk-text-titel-klein"
+        style={{
+          background: "none",
+          border: 0,
+          padding: "6px 0",
+          minHeight: 24,
+          color: "var(--color-text)",
+          cursor: "pointer",
+          font: "inherit",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        {/* Das Zeichen dreht sich, es wird nicht ausgetauscht — der
+            Zustand steht ohnehin in aria-expanded. */}
+        <span aria-hidden="true" style={{ display: "inline-block", transition: "transform 140ms", transform: offen ? "rotate(90deg)" : "none" }}>
+          ▸
+        </span>
+        {p.devices.length} Geräte einzeln
+      </button>
+
+      {offen && (
+        <ul id={id} style={{ listStyle: "none", padding: 0, margin: "8px 0 0", display: "grid", gap: 12 }}>
+          {p.devices.map(({ device, reading }) => (
+            <li key={device.id}>
+              <div className="sk-mono-kompakt" style={{ color: "var(--color-text)" }}>
+                {device.id}
+              </div>
+              <div className="sk-mono-daten" style={{ color: "var(--color-muted)" }}>
+                Format {device.vendor_format} · {Math.round(device.share * 100)} % Anteil ·{" "}
+                {device.status} · Sollwert {Math.round(device.setpoint * 100)} % ·{" "}
+                {reading.output_kw.toFixed(1)} kW
+              </div>
+              <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                {STUFEN.map(([v, label]) => (
+                  <Knopf
+                    key={v}
+                    aktiv={Math.abs(device.setpoint - v) < 0.001}
+                    disabled={laeuft}
+                    onClick={() =>
+                      senden({
+                        action: "setpoint_setzen",
+                        park_id: p.park.id,
+                        device_id: device.id,
+                        value: v,
+                      })
+                    }
+                  >
+                    {label}
+                  </Knopf>
+                ))}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
