@@ -53,7 +53,9 @@ export function Schreibpfad({
       const r = await fetch("/api/kommando", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...body, requested_by: z.operatorId }),
+        /* requested_by zuerst, damit der Aufrufer es überschreiben kann.
+           Genau eine Stelle tut das: der Testschuss weiter unten. */
+        body: JSON.stringify({ requested_by: z.operatorId, ...body }),
       });
       setAntwort(await r.json());
       nachKommando();
@@ -76,7 +78,7 @@ export function Schreibpfad({
         wenn er zustimmt. Abgelehnte Kommandos landen genauso im Log wie ausgeführte.
       </p>
 
-      <Mandant z={z} />
+      <Mandant z={z} laeuft={laeuft} senden={senden} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20, marginTop: 24 }}>
         {z.parks.map((p) => {
@@ -378,15 +380,73 @@ function WaechterAntwort({ command }: { command: Command }) {
   );
 }
 
-/** Mandantentrennung zum Vorführen. Ein echtes Auth-System ist nicht in v1. */
-function Mandant({ z }: { z: Zustand }) {
+/*
+  Mandantentrennung zum Vorführen. Ein echtes Auth-System ist nicht in v1.
+
+  Warum hier kein Umschalter steht: die Zuständigkeitsprüfung ist echt und
+  läuft als erster Wächter bei jedem Kommando. Eine Anmeldung, eine Sitzung
+  oder Rechte gibt es aber nicht — nur eine Kennung im Zustand. Ein Knopf
+  „als op-nachbar handeln" wäre ein Rollenwechsel ohne Rollen dahinter.
+
+  Der Preis war, dass sich ausgerechnet der Wächter, der zuerst greift, als
+  einziger nicht vorführen ließ — man musste dem Satz glauben.
+
+  Der Testschuss löst das ohne Lüge: ein einzelnes Kommando, ausdrücklich im
+  Namen von op-nachbar, ausdrücklich als Vorführung benannt. Kein
+  Rollenwechsel, keine behauptete Anmeldung. Es geht über den echten Pfad und
+  nicht über den Trockenlauf, damit die Ablehnung auch im Log landet — die
+  Regel „jedes Kommando, auch das abgelehnte, landet im Log" gilt für einen
+  Testschuss genauso.
+*/
+function Mandant({
+  z,
+  laeuft,
+  senden,
+}: {
+  z: Zustand;
+  laeuft: boolean;
+  senden: (body: Record<string, unknown>) => void;
+}) {
+  const fremd = z.operatoren.find((o) => o.id !== z.operatorId);
   return (
-    <p className="sk-text-kompakt" style={{ color: "var(--color-muted)", marginTop: 16, maxWidth: 620 }}>
-      Angemeldet als <strong>{z.operatorId}</strong>. Der zweite Bediener{" "}
-      <code className="sk-mono-daten">op-nachbar</code> betreibt keines dieser Felder — jeder
-      Schreibversuch von ihm wird mit Begründung abgelehnt. Das ist ein Stub, kein Auth-System,
-      und die Oberfläche sagt das.
-    </p>
+    <div style={{ marginTop: 16, maxWidth: 620 }}>
+      <p className="sk-text-kompakt" style={{ color: "var(--color-muted)", margin: 0 }}>
+        Angemeldet als <strong>{z.operatorId}</strong>. Der zweite Bediener{" "}
+        <code className="sk-mono-daten">op-nachbar</code> betreibt keines dieser Felder — jeder
+        Schreibversuch von ihm wird mit Begründung abgelehnt. Das ist ein Stub, kein Auth-System,
+        und die Oberfläche sagt das.
+      </p>
+      {fremd && (
+        <button
+          type="button"
+          disabled={laeuft}
+          onClick={() =>
+            senden({
+              action: "setpoint_setzen",
+              park_id: z.parks[0]?.park.id,
+              value: 0.5,
+              requested_by: fremd.id,
+            })
+          }
+          className="sk-text-titel-klein"
+          style={{
+            marginTop: 10,
+            background: "var(--color-bg)",
+            color: "var(--color-text)",
+            border: "1px dashed var(--color-muted)",
+            borderRadius: "var(--radius-sm)",
+            padding: "8px 12px",
+            minHeight: 24,
+            cursor: laeuft ? "wait" : "pointer",
+            font: "inherit",
+          }}
+        >
+          {/* Gestrichelter Rahmen: dieser Knopf schaltet nichts, er führt vor.
+              Die übrigen Bedienelemente tragen durchgezogene Rahmen. */}
+          Ablehnung vorführen — Kommando als {fremd.id}
+        </button>
+      )}
+    </div>
   );
 }
 

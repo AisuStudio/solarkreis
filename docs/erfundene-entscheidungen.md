@@ -118,6 +118,17 @@ Mandantentrennung prüfen will, nimmt die Route:
 /api/kommando?action=setpoint_setzen&park_id=nord&value=0.6&operator=op-nachbar
 ```
 
+**Ergänzt am 30.08 — der Testschuss.** Der Preis dieser Entscheidung war,
+dass sich ausgerechnet der Wächter, der zuerst greift, als einziger nicht
+vorführen ließ. Jetzt steht unter dem Absatz ein Knopf „Ablehnung vorführen —
+Kommando als op-nachbar". Er schickt ein einzelnes Kommando im Namen des
+fremden Mandanten über den echten Pfad, nicht über den Trockenlauf: die
+Ablehnung landet damit auch im Log, und die Regel „jedes Kommando, auch das
+abgelehnte, landet im Log" gilt für einen Testschuss genauso.
+
+Kein Rollenwechsel, keine behauptete Anmeldung. Der Knopf trägt als einziger
+der Seite einen gestrichelten Rahmen: er schaltet nichts, er führt vor.
+
 ---
 
 ### 7 · Der Ereignisstrom zeigt die letzten 40 Einträge, neueste oben
