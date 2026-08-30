@@ -2,6 +2,7 @@
 @import "./waffle/tokens.css";
 @import "./waffle/components.css";
 @import "./tokens.solarkreis.css";
+@import "./type.solarkreis.css";
 
 /* ─── Tokens für Tailwind-Utilities öffnen ──────────────────────────────
    @theme inline gibt die Werte in die Utilities hinein, ohne die Variablen

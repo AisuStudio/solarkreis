@@ -1,0 +1,100 @@
+/*
+  Typo-Ebene. Dieselben neun Stufen und dieselben zwanzig Stile wie in der
+  Figma-Datei — dort als Variablen `SK/Schrift/01…09` und als Textstile
+  `SK/Mono/*`, `SK/Text/*`, `SK/Titel/*`.
+
+  Warum überhaupt eine Skala: vor dem Aufräumen lagen 63 verschiedene
+  Typo-Kombinationen in den Entwürfen (Zeilenhöhen 154,99 % / 158,00 % /
+  151,99 %, Laufweiten 0/3/4/6/8/10 gemischt). Vier Größen waren Ausrutscher
+  — 12,5 · 19 · 24 · 44 — und sind auf die nächste Stufe gezogen. Kein neuer
+  Wert wurde erfunden.
+
+  Die Familien kommen aus waffle und werden hier nicht neu bestimmt:
+  --font-primary Public Sans (Fließtext), --font-secondary Stoke
+  (Überschriften), --font-tertiary iA Writer Mono (Zahlen und Labels).
+
+  Untergrenze ist 12px. Das ist keine WCAG-Vorgabe — WCAG kennt keine
+  Mindestgröße — sondern eine Projektregel, nachgemessen an den Entwürfen.
+*/
+
+:root {
+  --sk-fs-01: 12px;  /* Label       */
+  --sk-fs-02: 13px;  /* Kompakt     */
+  --sk-fs-03: 14px;  /* Text        */
+  --sk-fs-04: 15px;  /* Betont      */
+  --sk-fs-05: 20px;  /* Groß        */
+  --sk-fs-06: 26px;  /* Zwischentitel */
+  --sk-fs-07: 28px;  /* Abschnitt   */
+  --sk-fs-08: 40px;  /* Seitentitel */
+  --sk-fs-09: 52px;  /* Schlagzeile */
+}
+
+/* ── Mono: Zahlen und Labels ───────────────────────────────────────────
+   Überall tabular-nums, sonst tanzen die Ziffern bei jedem Sim-Tick.     */
+
+.sk-mono-wortmarke,
+.sk-mono-zahl,
+.sk-mono-betont,
+.sk-mono-kompakt,
+.sk-mono-eyebrow,
+.sk-mono-daten {
+  font-family: var(--font-tertiary);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.sk-mono-wortmarke { font-size: var(--sk-fs-05); letter-spacing: .08em; line-height: 1.3; }
+.sk-mono-zahl      { font-size: var(--sk-fs-06); line-height: 1.3; }
+.sk-mono-betont    { font-size: var(--sk-fs-04); line-height: 1.3; }
+.sk-mono-kompakt   { font-size: var(--sk-fs-02); line-height: 1.4; }
+.sk-mono-daten     { font-size: var(--sk-fs-01); line-height: 1.3; }
+
+/* Eyebrow trägt die Großschreibung selbst — im Markup steht der Text in
+   normaler Schreibweise, damit Screenreader ihn nicht buchstabieren. */
+.sk-mono-eyebrow {
+  font-size: var(--sk-fs-01);
+  letter-spacing: .08em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+/* ── Public Sans: Fließtext und Titel ──────────────────────────────────── */
+
+.sk-text-vorspann,
+.sk-text-lead,
+.sk-text-fliess,
+.sk-text-kompakt,
+.sk-text-label,
+.sk-text-titel,
+.sk-text-titel-klein,
+.sk-text-knopf,
+.sk-text-label-betont {
+  font-family: var(--font-primary);
+}
+
+.sk-text-vorspann     { font-size: var(--sk-fs-05); line-height: 1.5;  font-weight: 400; }
+.sk-text-lead         { font-size: var(--sk-fs-04); line-height: 1.6;  font-weight: 400; }
+.sk-text-fliess       { font-size: var(--sk-fs-03); line-height: 1.55; font-weight: 400; }
+.sk-text-kompakt      { font-size: var(--sk-fs-02); line-height: 1.55; font-weight: 400; }
+.sk-text-label        { font-size: var(--sk-fs-01); line-height: 1.3;  font-weight: 400; }
+.sk-text-titel        { font-size: var(--sk-fs-04); line-height: 1.4;  font-weight: 700; }
+.sk-text-titel-klein  { font-size: var(--sk-fs-02); line-height: 1.4;  font-weight: 700; }
+.sk-text-knopf        { font-size: var(--sk-fs-02); line-height: 1.4;  font-weight: 700; letter-spacing: .04em; }
+.sk-text-label-betont { font-size: var(--sk-fs-01); line-height: 1.3;  font-weight: 700; }
+
+/* ── Stoke: nur Überschriften, nie Fließtext, nie klein ────────────────── */
+
+.sk-titel-phase,
+.sk-titel-zwischen,
+.sk-titel-abschnitt,
+.sk-titel-seite,
+.sk-titel-schlagzeile {
+  font-family: var(--font-secondary);
+  font-weight: 400;
+}
+
+.sk-titel-phase       { font-size: var(--sk-fs-05); line-height: 1.25; letter-spacing: -.005em; }
+.sk-titel-zwischen    { font-size: var(--sk-fs-06); line-height: 1.35; letter-spacing: -.005em; }
+.sk-titel-abschnitt   { font-size: var(--sk-fs-07); line-height: 1.18; letter-spacing: -.01em; }
+.sk-titel-seite       { font-size: var(--sk-fs-08); line-height: 1.10; letter-spacing: -.01em; }
+.sk-titel-schlagzeile { font-size: var(--sk-fs-09); line-height: 1.08; letter-spacing: -.015em; }

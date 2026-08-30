@@ -61,4 +61,15 @@
         immer auch Wort und Bestätigungsdialog.                              */
   --sk-estop-bg:    var(--color-strawberry-5);
   --sk-estop-label: var(--color-vanilla);
+
+
+/* ── Zustände der Bahnen. Spiegelt Doms Figma-Variablen SK/Tr-Md (50) und
+      SK/Tr-Strong (30). Gemessen: eine read-Bahn bei 50 % misst gegen den
+      Canvas nur 1,97:1 — die Ink-Fassung darunter hält aber 3,19:1 und trägt
+      damit die 3:1 aus WCAG 1.4.11. Bei 30 % fällt auch die Fassung (1,89:1),
+      deshalb zeigt „inaktiv" gar keine Bahn statt einer schwachen.
+      Deckkraft liegt NIE auf Kartentext: cortado hält bei keiner Dimmung,
+      Ink nur bis etwa 65 %.                                                */
+  --sk-op-hover:    .5;
+  --sk-op-inactive: .3;
 }
