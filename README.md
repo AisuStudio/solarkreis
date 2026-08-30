@@ -19,7 +19,7 @@ Einstrahlung plus Rauschen. Die Oberfläche kennzeichnet das an jeder Stelle.
 
 ## Stand
 
-Acht von zehn Schritten abgeschlossen.
+Alle zehn Schritte abgeschlossen. Was danach offen bleibt, steht unten.
 
 | | Schritt | |
 |---|---|---|
@@ -32,7 +32,12 @@ Acht von zehn Schritten abgeschlossen.
 | 7 | Kreis-Regel + Alerts | ✓ die Automatik geht durch denselben Wächter wie ein Mensch |
 | 8 | NASA FIRMS | ✓ mit begründeter Schwelle statt rohem Feed |
 | 9 | Datenquellen-Seite | ✓ `/datenquellen` |
-| 10 | Dokumentationsseite | ○ Entwurf steht in Figma, `/doku` ist noch 404 |
+| 10 | Dokumentationsseite | ✓ `/doku`, an mehreren Stellen gegen die Messung nachgezogen |
+
+**Noch offen:** der animierte Hero liegt als Prototyp unter `public/hero.html` und ist
+noch keine React-Komponente · die Geometrie des Lageplans ist nicht sauber (Text schneidet
+in den Knotenkästen ab) · kein Deploy · Tastaturfokus und Reflow auf 320 px sind nicht
+geprüft.
 
 Außerhalb der Reihenfolge: `lib/glare.ts` als Beleg für eine Absage (siehe unten),
 ein Hero-Prototyp als eine Datei unter `public/hero.html`, und `scripts/pruefen.mjs` —

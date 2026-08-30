@@ -173,8 +173,12 @@ function Knopf({
       className="sk-text-titel-klein"
       style={{
         background: aktiv ? "var(--color-text)" : "var(--color-bg)",
-        color: aktiv ? "var(--color-bg)" : kritisch ? "var(--sk-crit)" : "var(--color-text)",
-        border: `1px solid ${kritisch ? "var(--sk-crit)" : "var(--color-muted)"}`,
+        /* Die Schrift bleibt Ink, auch beim kritischen Knopf: strawberry-5 auf
+           Vanilla misst 4,31:1 und verfehlt die 4,5 für Fließtext knapp. Das
+           Signal trägt der Rahmen (4,31 reicht für Nicht-Text, gefordert 3:1)
+           und das Wort selbst — Farbe war hier ohnehin nie das einzige Signal. */
+        color: aktiv ? "var(--color-bg)" : "var(--color-text)",
+        border: `${kritisch ? "2px" : "1px"} solid ${kritisch ? "var(--sk-crit)" : "var(--color-muted)"}`,
         borderRadius: "var(--radius-sm)",
         padding: "8px 12px",
         minHeight: 24,

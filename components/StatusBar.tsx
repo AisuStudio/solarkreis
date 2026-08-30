@@ -29,7 +29,10 @@ function Zelle({
       </div>
       <div
         className="sk-mono-betont"
-        style={{ color: offen ? "var(--color-hazelnut)" : "var(--color-text)", marginTop: 2 }}
+        /* NICHT hazelnut: der misst auf hellem Grund 2,24:1. Auf der
+           Ink-Leiste wären es 6,13:1 — derselbe Token, zwei Untergründe,
+           zwei Ergebnisse. Hier gilt der helle. */
+        style={{ color: offen ? "var(--color-muted)" : "var(--color-text)", marginTop: 2 }}
       >
         {wert}
       </div>
