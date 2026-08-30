@@ -65,11 +65,17 @@ Vier Entscheidungen über waffle hinaus, alle auf `/ds` belegt:
 | NASA FIRMS — aktive Feuer | ja | offen, bis dahin gekennzeichneter Mock |
 
 **Satellitenquelle:** NASA stellt die Auslieferung von **Suomi NPP zum 1.11.2026
-ein** (Hinweis auf der FIRMS-Seite, Stand 30.08.2026). SolarKreis fragt deshalb von
-Anfang an `VIIRS_NOAA21_NRT` und `VIIRS_NOAA20_NRT` ab, nicht `VIIRS_SNPP_NRT` —
-sonst läuft der Feed zwei Monate nach dem Bau still aus. Die genauen Quellennamen
-prüfe ich in Schritt 8 gegen `/api/data_availability` gegen, bevor sie fest im Code
-landen.
+ein**. SolarKreis fragt deshalb `VIIRS_NOAA21_NRT` und `VIIRS_NOAA20_NRT` ab, nicht
+`VIIRS_SNPP_NRT` — sonst läuft der Feed zwei Monate nach dem Bau still aus.
+Gegen `/api/data_availability` geprüft (30.08.2026): beide Quellen liefern bis heute,
+SNPP ebenfalls noch. Rate-Limit sind 5000 Abrufe pro 10 Minuten, für einen Sim-Tick
+also kein Thema.
+
+**Feuerdichte, gemessen am 30.08.2026:** über ganz Deutschland **null** aktive Feuer
+in 10 Tagen — auf NOAA-21, NOAA-20 und MODIS gleichermaßen. Europaweit im selben
+Zeitraum 112 an einem Tag. Der echte Feed ist über Deutschland also fast immer leer.
+Das ist keine Fehlfunktion, sondern der Normalzustand, und die Oberfläche zeigt ihn
+als solchen an.
 
 Den FIRMS-Key gibt es kostenlos unter
 <https://firms.modaps.eosdis.nasa.gov/api/map_key/> — E-Mail eintragen, der Key
