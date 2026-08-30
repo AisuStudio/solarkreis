@@ -29,7 +29,12 @@
    Ink auf dem dunklen Grund verschwindet.
    ───────────────────────────────────────────────────────────────────────── */
 
-.sk-hero {
+/* Die dunkle Palette teilen sich Hero und Lageplan. Sie stand zuerst nur
+   im Hero; als der Lageplan dieselbe Insel werden sollte, wäre die zweite
+   Möglichkeit gewesen, die Werte zu kopieren. Zwei Quellen für dieselbe
+   Farbe gehen genau einmal gut. */
+.sk-hero,
+.sk-dunkelzone {
   --grund:    #14101f;
   --flaeche:  #221c33;
   --flaeche2: #1b1628;
@@ -46,7 +51,9 @@
 
   --font-text: var(--font-primary, "Public Sans", "Helvetica Neue", Arial, sans-serif);
   --font-zahl: var(--font-tertiary, "iA Writer Mono", ui-monospace, "SF Mono", Menlo, monospace);
+}
 
+.sk-hero {
   background: var(--grund);
   color: var(--text);
   border-radius: 10px;

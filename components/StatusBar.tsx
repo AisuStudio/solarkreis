@@ -24,7 +24,7 @@ function Zelle({
 }) {
   return (
     <div style={{ minWidth: 0 }}>
-      <div className="sk-mono-eyebrow" style={{ color: "var(--color-muted)" }}>
+      <div className="sk-mono-eyebrow" style={{ color: "var(--leise)" }}>
         {label}
       </div>
       <div
@@ -32,12 +32,12 @@ function Zelle({
         /* NICHT hazelnut: der misst auf hellem Grund 2,24:1. Auf der
            Ink-Leiste wären es 6,13:1 — derselbe Token, zwei Untergründe,
            zwei Ergebnisse. Hier gilt der helle. */
-        style={{ color: offen ? "var(--color-muted)" : "var(--color-text)", marginTop: 2 }}
+        style={{ color: offen ? "var(--leise)" : "var(--text)", marginTop: 2 }}
       >
         {wert}
       </div>
       {herkunft && (
-        <div className="sk-text-label" style={{ color: "var(--color-muted)", marginTop: 1 }}>
+        <div className="sk-text-label" style={{ color: "var(--leise)", marginTop: 1 }}>
           {herkunft}
         </div>
       )}
@@ -73,7 +73,8 @@ export function StatusBar({ z }: { z: Zustand }) {
         gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
         gap: 24,
         padding: "12px 40px",
-        background: "var(--sk-canvas-bg)",
+        background: "var(--grund)",
+        color: "var(--text)",
         borderBottom: "1px solid var(--color-muted)",
       }}
     >

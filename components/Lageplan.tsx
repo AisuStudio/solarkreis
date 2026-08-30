@@ -138,10 +138,10 @@ export function Lageplan({ z }: { z: Zustand }) {
       {/* ── Seitenspalte ────────────────────────────────────────────────── */}
       <aside
         className="sk-lageplan__spalte"
-        style={{ background: "var(--color-text)", padding: "20px 24px" }}
+        style={{ padding: "20px 24px" }}
         aria-label="Externe Quellen und Akteure"
       >
-        <div className="sk-mono-eyebrow" style={{ color: "var(--color-hazelnut)" }}>
+        <div className="sk-mono-eyebrow" style={{ color: "var(--leise)" }}>
           Externe Quellen
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 18, marginTop: 12 }}>
@@ -161,7 +161,7 @@ export function Lageplan({ z }: { z: Zustand }) {
       </aside>
 
       {/* ── Canvas ──────────────────────────────────────────────────────── */}
-      <div className="sk-lageplan__canvas" style={{ background: "var(--sk-canvas-bg)" }}>
+      <div className="sk-lageplan__canvas">
         <svg
           viewBox={`0 0 ${BREITE} ${HOEHE}`}
           width="100%"
@@ -175,7 +175,7 @@ export function Lageplan({ z }: { z: Zustand }) {
         >
           <defs>
             <marker id="pfeil-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-              <path d="M0,1 L9,5 L0,9 z" fill="var(--sk-line-casing)" />
+              <path d="M0,1 L9,5 L0,9 z" fill="var(--leise)" />
             </marker>
           </defs>
 
@@ -236,7 +236,7 @@ export function Lageplan({ z }: { z: Zustand }) {
           <path
             d={`M ${MITTE.x + 40} ${MITTE.y + 40} L ${SPEICHER.x - 40} ${SPEICHER.y - 20}`}
             fill="none"
-            stroke="var(--color-muted)"
+            stroke="var(--leise)"
             strokeWidth="1.5"
             strokeDasharray="4 4"
           />
@@ -336,16 +336,20 @@ function Knoten({
   zeilen: string[];
   dunkel?: boolean;
 }) {
-  const vordergrund = dunkel ? "var(--color-bg)" : "var(--color-text)";
-  const sekundaer = dunkel ? "var(--color-hazelnut)" : "var(--color-muted)";
+  /* „dunkel" hieß früher: dieser eine Knoten ist anders als die anderen.
+     Auf der dunklen Insel sind alle Knoten gleich gebaut — die Marke
+     unterscheidet jetzt nur noch die Zentrale von den Feldern, und zwar
+     über die Fläche, nicht über eine eigene Farbwelt. */
+  const vordergrund = "var(--text)";
+  const sekundaer = "var(--leise)";
   return (
     <g transform={`translate(${x - w / 2} ${y - h / 2})`}>
       <rect
         width={w}
         height={h}
         rx="var(--radius-md)"
-        fill={dunkel ? "var(--color-text)" : "var(--color-bg)"}
-        stroke={dunkel ? "var(--color-hazelnut)" : "var(--color-muted)"}
+        fill={dunkel ? "var(--flaeche2)" : "var(--flaeche)"}
+        stroke={dunkel ? "var(--leise)" : "var(--rahmen)"}
         strokeWidth="1"
       />
       <foreignObject x="0" y="0" width={w} height={h}>
@@ -385,16 +389,17 @@ function QuellKarte({
 }) {
   /* Zurücktreten, ohne unlesbar zu werden.
 
-     Gemessen auf dem Kartengrund rgb(242,241,235): Ink steht voll bei
-     14,88:1 und hält bis 65 % Deckkraft (5,02:1). Der Sekundärton cortado
-     steht bei 5,17:1 und fällt schon bei 85 % durch (3,80:1) — jede Stufe
-     Dimmen kostet ihn die Lesbarkeit.
+     Auf hellem Grund war das ein Problem: der Sekundärton cortado stand dort
+     bei 5,17:1 und fiel schon bei 85 % Deckkraft durch. Ich hatte deshalb
+     einen Farbwechsel eingebaut — beim Dimmen von cortado auf Ink.
 
-     Deshalb sind es zwei Griffe statt einem: die Karte geht auf 65 %, und
-     die Nebenzeilen wechseln dabei von cortado auf Ink. Das Ergebnis auf
-     dem Schirm ist ein weiches Grau bei 5,02:1 — die Karte tritt zurück,
-     der Text bleibt. Ein einzelner opacity-Griff hätte das nicht gekonnt. */
-  const nebenfarbe = gedimmt ? "var(--color-text)" : "var(--color-muted)";
+     Auf der dunklen Insel ist der Trick überflüssig. Gemessen auf der
+     Kartenfläche #221c33 über dem Grund #14101f steht --leise bei 7,62:1 und
+     hält das Dimmen bis 75 % (4,87:1), --text bis 55 %. Eine Zeile Code
+     weniger, weil der Untergrund die Arbeit macht.
+
+     75 % ist damit keine Vorliebe, sondern die gemessene Grenze. */
+  const DIMM = 0.75;
   const chip =
     q.stand === "echt"
       ? { text: `echt · ${q.fluss}`, bg: q.fluss === "write" ? "var(--sk-write-fill)" : "var(--sk-read-fill)" }
@@ -405,7 +410,7 @@ function QuellKarte({
   return (
     <div>
       {eyebrowDavor && (
-        <div className="sk-mono-eyebrow" style={{ color: "var(--color-hazelnut)", marginBottom: 12 }}>
+        <div className="sk-mono-eyebrow" style={{ color: "var(--leise)", marginBottom: 12 }}>
           {eyebrowDavor}
         </div>
       )}
@@ -420,16 +425,16 @@ function QuellKarte({
           display: "block",
           width: "100%",
           textAlign: "left",
-          background: "var(--sk-canvas-bg)",
+          background: "var(--flaeche)",
           /* Der ausgewählte Zustand steht weiterhin im Rahmen, nicht in der
              Deckkraft — ein Rahmen ist eindeutig, eine Helligkeit nicht. Die
              Deckkraft trägt die andere Aussage: „nicht dieser hier". */
-          border: aktiv ? "2px solid var(--color-text)" : "1px solid var(--color-muted)",
+          border: aktiv ? "2px solid var(--text)" : "1px solid var(--rahmen)",
           padding: aktiv ? 11 : 12,
           borderRadius: "var(--radius-md)",
           cursor: "pointer",
           font: "inherit",
-          opacity: gedimmt ? 0.65 : 1,
+          opacity: gedimmt ? DIMM : 1,
           transition: "opacity .18s ease",
         }}
       >
@@ -445,14 +450,14 @@ function QuellKarte({
         >
           {chip.text}
         </span>
-        <span className="sk-text-titel" style={{ display: "block", marginTop: 8, color: "var(--color-text)" }}>
+        <span className="sk-text-titel" style={{ display: "block", marginTop: 8, color: "var(--text)" }}>
           {q.name}
         </span>
-        <span className="sk-text-label" style={{ display: "block", color: nebenfarbe }}>
+        <span className="sk-text-label" style={{ display: "block", color: "var(--leise)" }}>
           {q.zeile}
         </span>
         {q.hinweis && (
-          <span className="sk-text-label" style={{ display: "block", color: nebenfarbe, marginTop: 2 }}>
+          <span className="sk-text-label" style={{ display: "block", color: "var(--leise)", marginTop: 2 }}>
             {q.hinweis}
           </span>
         )}
@@ -475,9 +480,9 @@ function Legende() {
     krit: "var(--sk-crit-fill)",
   };
   const punkt: Record<string, string> = {
-    read: "var(--sk-read)",
-    write: "var(--sk-write)",
-    rw: "var(--sk-rw)",
+    read: "var(--read)",
+    write: "var(--write)",
+    rw: "var(--rw)",
     krit: "var(--sk-crit)",
   };
   return (
@@ -489,8 +494,8 @@ function Legende() {
         flexWrap: "wrap",
         margin: "0 40px 32px",
         padding: "12px 16px",
-        background: "var(--color-bg)",
-        border: "1px solid var(--color-muted)",
+        background: "var(--flaeche)",
+        border: "1px solid var(--rahmen)",
         borderRadius: "var(--radius-md)",
       }}
     >
@@ -517,17 +522,17 @@ function Legende() {
                 height: 9,
                 borderRadius: "50%",
                 background: punkt[k],
-                border: "1px solid var(--sk-line-casing)",
+                border: "1px solid var(--grund)",
               }}
             />
             {name}
           </span>
-          <span className="sk-text-label" style={{ color: "var(--color-muted)" }}>
+          <span className="sk-text-label" style={{ color: "var(--leise)" }}>
             {text}
           </span>
         </span>
       ))}
-      <span className="sk-text-label" style={{ color: "var(--color-muted)" }}>
+      <span className="sk-text-label" style={{ color: "var(--leise)" }}>
         gestrichelt = der Kreis, Feld an Feld
       </span>
     </div>

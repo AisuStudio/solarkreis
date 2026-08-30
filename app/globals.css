@@ -128,3 +128,38 @@ a { color: var(--color-accent); }
 @media (max-width: 520px) {
   .sk-statusleiste { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 }
+
+/* ── Der Lageplan als dunkle Insel ─────────────────────────────────────────
+   Vorher hatte die Simulation zwei Gründe und vier Kartenbehandlungen:
+   weiße Karten auf Ink in der Seitenspalte, weiße Karten auf hellem Grund
+   im Canvas, eine dunkle HQ-Karte darin, und den Speicher noch einmal
+   anders. Der Hero hat einen Grund und eine Karte — daher kommt der
+   Unterschied, den Dom „knackig" nennt.
+
+   Der Lageplan wird deshalb dieselbe Insel: ein Grund über Spalte und
+   Canvas hinweg, alle Knoten in derselben Fläche mit derselben Haarlinie.
+   Statusleiste darüber und „Eingreifen" darunter bleiben hell — eine
+   dunkle Insel in hellem Umfeld, genau wie auf der Introseite.
+
+   Die Farbwerte kommen aus der geteilten Palette in hero.solarkreis.css.
+   Keine neuen erfunden.                                                   */
+
+.sk-dunkelzone {
+  background: var(--grund);
+  color: var(--text);
+}
+
+.sk-lageplan__spalte { background: var(--grund); }
+.sk-lageplan__canvas { background: var(--grund); }
+
+/* Die Trennung zwischen Spalte und Canvas trug vorher der Farbwechsel.
+   Bei einem Grund braucht es dafür eine Linie — dieselbe Haarlinie, die
+   auch die Knoten fasst. */
+.sk-lageplan__spalte { border-right: 1px solid var(--rahmen); }
+
+@media (max-width: 760px) {
+  .sk-lageplan__spalte {
+    border-right: 0;
+    border-bottom: 1px solid var(--rahmen);
+  }
+}
