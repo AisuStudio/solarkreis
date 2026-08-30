@@ -118,6 +118,11 @@ export function projectDevices(): Device[] {
           d.setpoint = 0;
           d.status = "offline";
           break;
+        case "schutzstellung":
+          // Module aus der Blendrichtung gedreht: die Anlage läuft weiter,
+          // liefert aber weniger. Kein Abschalten — das wäre unverhältnismäßig.
+          d.setpoint = clamp01(c.value ?? 0.7);
+          break;
         case "freigeben":
           d.setpoint = 1;
           if (d.status === "offline") d.status = "ok";

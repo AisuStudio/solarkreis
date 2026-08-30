@@ -19,6 +19,12 @@ Schritt 2 von 10 der Build-Reihenfolge.
 2. ✓ Datenmodell, Event-Store, Simulation — Kontrolle über `/api/state`
 3. … Open-Meteo end-to-end
 
+Feld Süd liegt seit der Autobahn-Frage an einer realen Ackerfläche bei Deutsch
+Bork, 221 m von der A9 — innerhalb des 500-m-Korridors, den das EEG für
+Freiflächen-PV entlang von Autobahnen privilegiert. Was daraus **nicht** folgt
+(Verkehrsmelder, Blendungs-Alarm) und warum, steht mit den Messwerten in
+[docs/scope-out.md](docs/scope-out.md).
+
 ### Wie die Simulation rechnet
 
 Nicht kosmetisch, sondern physikalisch. `lib/solar.ts` bestimmt den Sonnenstand

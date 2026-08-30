@@ -29,6 +29,8 @@ export const PARKS: Park[] = [
     lon: 13.5017,
     capacity_kw: 18_000,
     operator_id: "op-kreis",
+    module_azimuth: 180,
+    module_tilt: 30,
   },
   {
     id: "ost",
@@ -38,15 +40,28 @@ export const PARKS: Park[] = [
     lon: 14.2408,
     capacity_kw: 24_000,
     operator_id: "op-kreis",
+    module_azimuth: 180,
+    module_tilt: 28,
   },
   {
+    /*
+      Liegt als einziges Feld an einer Autobahn. Der Standort ist eine reale
+      Ackerfläche, 221 m von der A9 — gemessen gegen die OSM-Geometrie, also
+      innerhalb des 500-m-Korridors, den das EEG für Freiflächen-PV entlang von
+      Autobahnen privilegiert. Genau deshalb stehen dort so viele Parks.
+      Die Peilung 309° und der Fahrbahnverlauf 51°/231° stammen aus derselben
+      Messung und tragen den Blendungsfall in lib/glare.ts.
+    */
     id: "sued",
     name: "Feld Süd",
-    place: "Jüterbog, Brandenburg",
-    lat: 51.9958,
-    lon: 13.0764,
+    place: "Deutsch Bork, Brandenburg — an der A9",
+    lat: 52.1752,
+    lon: 12.8374,
     capacity_kw: 12_000,
     operator_id: "op-kreis",
+    module_azimuth: 180,
+    module_tilt: 25,
+    motorway: { ref: "A 9", distance_m: 221, bearing_deg: 309 },
   },
 ];
 

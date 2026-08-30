@@ -21,6 +21,16 @@ export interface Source {
 
 export type OperatorId = string;
 
+/** Lage an einer Autobahn. Nur gesetzt, wo es zutrifft. */
+export interface MotorwayAdjacency {
+  /** Kennung, z. B. "A 9". */
+  ref: string;
+  /** Abstand zur Fahrbahn in Metern, aus OpenStreetMap gemessen. */
+  distance_m: number;
+  /** Peilung vom Feld zur Fahrbahn, Grad von Norden. */
+  bearing_deg: number;
+}
+
 /** Ein Solarpark. Simuliert — aber an echten Koordinaten, damit das Wetter stimmt. */
 export interface Park {
   id: string;
@@ -31,6 +41,11 @@ export interface Park {
   lon: number;
   capacity_kw: number;
   operator_id: OperatorId;
+  /** Ausrichtung der Module, Grad von Norden. 180 = Süden. */
+  module_azimuth: number;
+  /** Neigung der Module in Grad. */
+  module_tilt: number;
+  motorway?: MotorwayAdjacency;
 }
 
 /** Die drei Geräteformate aus dem Brief. Der Kernbeleg der Normalisierung. */
@@ -77,6 +92,7 @@ export type AlertType =
   | "ueberhitzung"
   | "ueberlast"
   | "waldbrand"
+  | "blendung"
   | "daten_veraltet";
 
 export type Severity = "hinweis" | "warnung" | "kritisch";
@@ -98,6 +114,8 @@ export type CommandAction =
   | "setpoint_setzen"
   | "drosseln"
   | "not_aus"
+  /** Module aus der Blendrichtung drehen. Kein Abschalten — die Leistung sinkt nur. */
+  | "schutzstellung"
   | "freigeben";
 
 /**

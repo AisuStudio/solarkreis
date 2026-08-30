@@ -68,3 +68,37 @@ export function clearSkyIrradiance(lat: number, lon: number, ts: number): number
 export function isDaylight(lat: number, lon: number, ts: number): boolean {
   return solarElevation(lat, lon, ts) > -6;
 }
+
+/**
+ * Azimut der Sonne in Grad, von Norden im Uhrzeigersinn.
+ * 90 = Osten, 180 = Süden, 270 = Westen.
+ */
+export function solarAzimuth(lat: number, lon: number, ts: number): number {
+  const d = new Date(ts);
+  const utcHours = d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600;
+  const solarTime = utcHours + (4 * lon + equationOfTime(ts)) / 60;
+  const hourAngle = RAD * ((solarTime - 12) * 15);
+  const dec = RAD * declination(ts);
+  const phi = RAD * lat;
+  const h = RAD * solarElevation(lat, lon, ts);
+
+  const y = Math.sin(hourAngle);
+  const x = Math.cos(hourAngle) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi);
+  const az = Math.atan2(y, x) / RAD + 180;
+  void h;
+  return (az + 360) % 360;
+}
+
+/** Einheitsvektor zur Sonne in Ost-Nord-Oben. */
+export function sunVector(lat: number, lon: number, ts: number): [number, number, number] {
+  const h = RAD * solarElevation(lat, lon, ts);
+  const a = RAD * solarAzimuth(lat, lon, ts);
+  return [Math.cos(h) * Math.sin(a), Math.cos(h) * Math.cos(a), Math.sin(h)];
+}
+
+/** Flächennormale eines Moduls aus Neigung und Ausrichtung, gleiche Basis. */
+export function moduleNormal(tiltDeg: number, azimuthDeg: number): [number, number, number] {
+  const b = RAD * tiltDeg;
+  const a = RAD * azimuthDeg;
+  return [Math.sin(b) * Math.sin(a), Math.sin(b) * Math.cos(a), Math.cos(b)];
+}
