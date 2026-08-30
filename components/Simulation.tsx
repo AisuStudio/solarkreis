@@ -14,12 +14,17 @@ import { useEffect, useState } from "react";
 import type { Zustand } from "@/lib/zustand";
 import { StatusBar } from "./StatusBar";
 import { Lageplan } from "./Lageplan";
+import { Schreibpfad } from "./Schreibpfad";
 
 const TAKT_MS = 2000;
 
 export function Simulation({ initial }: { initial: Zustand }) {
   const [z, setZ] = useState(initial);
   const [fehler, setFehler] = useState<string | null>(null);
+
+  /* Nach einem Kommando sofort neu holen statt auf den Takt zu warten —
+     sonst sieht der Bediener seine eigene Wirkung erst zwei Sekunden später. */
+  const [anstoss, setAnstoss] = useState(0);
 
   useEffect(() => {
     let lebt = true;
@@ -38,12 +43,13 @@ export function Simulation({ initial }: { initial: Zustand }) {
         if (lebt) setFehler(e instanceof Error ? e.message : "unbekannt");
       }
     };
+    hol();
     const id = setInterval(hol, TAKT_MS);
     return () => {
       lebt = false;
       clearInterval(id);
     };
-  }, []);
+  }, [anstoss]);
 
   return (
     <>
@@ -63,6 +69,7 @@ export function Simulation({ initial }: { initial: Zustand }) {
         </div>
       )}
       <Lageplan z={z} />
+      <Schreibpfad z={z} nachKommando={() => setAnstoss((n) => n + 1)} />
     </>
   );
 }

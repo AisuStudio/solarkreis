@@ -14,7 +14,7 @@
 */
 
 import { snapshot } from "./snapshot";
-import { PARKS, STORAGE } from "./seed";
+import { OPERATORS, PARKS, STORAGE } from "./seed";
 import { projectStorage } from "./storage";
 import { simNow, store } from "./store";
 import { openMeteo } from "./openmeteo";
@@ -40,7 +40,12 @@ export async function zustand(ts: number = simNow()) {
     },
     clock: store().clock,
     operatorId: store().operatorId,
+    operatoren: OPERATORS,
     eventCount: store().events.length,
+    /* Die letzten Ereignisse für die Anzeige. Nicht der ganze Strom: der
+       wächst unbegrenzt, und die Oberfläche braucht ihn nicht ganz. Wer
+       alles will, faltet selbst — dafür ist das Log da. */
+    log: store().events.slice(-40).reverse(),
   };
 }
 
