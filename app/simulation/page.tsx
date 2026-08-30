@@ -15,11 +15,11 @@ export const metadata = {
   description: "Drei simulierte Solarparks um eine Zentrale, gespeist mit echten Wetter-, Preis- und Feuerdaten.",
 };
 
-export default function SimulationSeite() {
+export default async function SimulationSeite() {
   return (
     <>
       <TopNav aktiv="/simulation" />
-      <Simulation initial={zustand()} />
+      <Simulation initial={await zustand()} />
     </>
   );
 }

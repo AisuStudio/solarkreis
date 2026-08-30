@@ -14,5 +14,5 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Parameter 'at' ist kein gültiges Datum." }, { status: 400 });
   }
 
-  return NextResponse.json(zustand(ts));
+  return NextResponse.json(await zustand(ts));
 }
