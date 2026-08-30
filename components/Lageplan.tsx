@@ -67,7 +67,15 @@ interface Quelle {
   hinweis?: string;
 }
 
-export function Lageplan({ z }: { z: Zustand }) {
+export function Lageplan({
+  z,
+  feldAktiv,
+  onFeld,
+}: {
+  z: Zustand;
+  feldAktiv: string | null;
+  onFeld: (id: string | null) => void;
+}) {
   const [aktiv, setAktiv] = useState<string | null>(null);
 
   const wetter = z.parks[0]?.weather.source;
@@ -179,21 +187,18 @@ export function Lageplan({ z }: { z: Zustand }) {
             </marker>
           </defs>
 
-          {/* Kreis zwischen den Feldern — gestrichelt, damit er sich von den
-              Radialbahnen unterscheidet, ohne eine fünfte Farbe zu brauchen. */
-          }
-          {felder.map((a, i) => {
-            const b = felder[(i + 1) % felder.length];
-            return (
-              <Bahn
-                key={`kreis-${a.park.id}`}
-                d={`M ${a.x} ${a.y} L ${b.x} ${b.y}`}
-                fluss="rw"
-                gestrichelt
-                opacity={aktiv === null ? 1 : 0.15}
-              />
-            );
-          })}
+          {/* Der Ring zwischen den Feldern ist raus.
+
+             Er war gestrichelt in der rw-Farbe gezeichnet und behauptete
+             damit, dass die Felder untereinander lesen und schreiben. Das
+             Modell kennt keine einzige Beziehung zwischen zwei Parks —
+             jeder Fluss läuft Feld <-> HQ.
+
+             Gekoppelt sind die Felder sehr wohl: über eine gemeinsame
+             Netzgrenze und einen gemeinsamen Speicher. Diese Kopplung läuft
+             aber durch die Zentrale und steht in den Radialbahnen darunter
+             schon da. Der Ring war die dritte Darstellung derselben Sache,
+             und die einzige falsche. */}
 
           {/* HQ ↔ Feld, Pfeil an beiden Enden */}
           {felder.map((f) => (
@@ -250,7 +255,9 @@ export function Lageplan({ z }: { z: Zustand }) {
             zeilen={[`${Math.round(z.speicher.soc * 100)} % · ${z.speicher.mode}`]}
           />
 
-          {/* Die drei Felder */}
+          {/* Die drei Felder. Sie melden ihren Zeiger nach oben, damit die
+              zugehörige Karte unter „Eingreifen" mitleuchtet — Ansehen und
+              Anfassen sind zwei Orte, aber dasselbe Feld. */}
           {felder.map((f) => (
             <Knoten
               key={f.park.id}
@@ -258,6 +265,8 @@ export function Lageplan({ z }: { z: Zustand }) {
               y={f.y}
               w={182}
               h={88}
+              hervor={feldAktiv === f.park.id}
+              onZeiger={(an) => onFeld(an ? f.park.id : null)}
               titel={f.park.name}
               eyebrow={undefined}
               zeilen={[
@@ -276,22 +285,22 @@ export function Lageplan({ z }: { z: Zustand }) {
 
 /* ── Bausteine ───────────────────────────────────────────────────────────── */
 
+/* Ohne den Ring gibt es keine gestrichelte Bahn mehr. Der Schalter dafür ist
+   deshalb weg — ein Parameter, den niemand setzt, sieht wie eine Möglichkeit
+   aus und ist keine. */
 function Bahn({
   d,
   fluss,
-  gestrichelt,
   gerichtet,
   beidseitig,
   opacity,
 }: {
   d: string;
   fluss: Fluss;
-  gestrichelt?: boolean;
   gerichtet?: boolean;
   beidseitig?: boolean;
   opacity: number | string;
 }) {
-  const strich = gestrichelt ? "7 6" : undefined;
   return (
     <g opacity={opacity} style={{ transition: "opacity 160ms" }}>
       {/* Fassung zuerst — sie muss unter der Farblinie liegen. */}
@@ -300,7 +309,6 @@ function Bahn({
         fill="none"
         stroke="var(--sk-line-casing)"
         strokeWidth="var(--sk-line-casing-w)"
-        strokeDasharray={strich}
         strokeLinecap="round"
         markerEnd={gerichtet || beidseitig ? "url(#pfeil-ink)" : undefined}
         markerStart={beidseitig ? "url(#pfeil-ink)" : undefined}
@@ -310,7 +318,6 @@ function Bahn({
         fill="none"
         stroke={FLUSS_FARBE[fluss]}
         strokeWidth="var(--sk-line-w)"
-        strokeDasharray={strich}
         strokeLinecap="round"
       />
     </g>
@@ -326,6 +333,8 @@ function Knoten({
   eyebrow,
   zeilen,
   dunkel,
+  hervor,
+  onZeiger,
 }: {
   x: number;
   y: number;
@@ -335,6 +344,8 @@ function Knoten({
   eyebrow?: string;
   zeilen: string[];
   dunkel?: boolean;
+  hervor?: boolean;
+  onZeiger?: (an: boolean) => void;
 }) {
   /* „dunkel" hieß früher: dieser eine Knoten ist anders als die anderen.
      Auf der dunklen Insel sind alle Knoten gleich gebaut — die Marke
@@ -343,14 +354,21 @@ function Knoten({
   const vordergrund = "var(--text)";
   const sekundaer = "var(--leise)";
   return (
-    <g transform={`translate(${x - w / 2} ${y - h / 2})`}>
+    <g
+      transform={`translate(${x - w / 2} ${y - h / 2})`}
+      onMouseEnter={onZeiger ? () => onZeiger(true) : undefined}
+      onMouseLeave={onZeiger ? () => onZeiger(false) : undefined}
+    >
+      {/* Hervorhebung im Rahmen, nicht in der Fläche: eine hellere Füllung
+          würde den Knoten nach vorn holen und die Karte selbst verändern.
+          Der Rahmen sagt „dieser hier" und lässt den Inhalt in Ruhe. */}
       <rect
         width={w}
         height={h}
         rx="var(--radius-md)"
         fill={dunkel ? "var(--flaeche2)" : "var(--flaeche)"}
-        stroke={dunkel ? "var(--leise)" : "var(--rahmen)"}
-        strokeWidth="1"
+        stroke={hervor ? "var(--text)" : dunkel ? "var(--leise)" : "var(--rahmen)"}
+        strokeWidth={hervor ? 2 : 1}
       />
       <foreignObject x="0" y="0" width={w} height={h}>
         <div style={{ padding: "10px 12px", color: vordergrund }}>
@@ -532,9 +550,6 @@ function Legende() {
           </span>
         </span>
       ))}
-      <span className="sk-text-label" style={{ color: "var(--leise)" }}>
-        gestrichelt = der Kreis, Feld an Feld
-      </span>
     </div>
   );
 }

@@ -27,7 +27,17 @@ const STUFEN: [number, string][] = [
   [0, "0 %"],
 ];
 
-export function Schreibpfad({ z, nachKommando }: { z: Zustand; nachKommando: () => void }) {
+export function Schreibpfad({
+  z,
+  nachKommando,
+  feldAktiv,
+  onFeld,
+}: {
+  z: Zustand;
+  nachKommando: () => void;
+  feldAktiv: string | null;
+  onFeld: (id: string | null) => void;
+}) {
   const [antwort, setAntwort] = useState<{ command: Command } | null>(null);
   const [laeuft, setLaeuft] = useState(false);
   const [notAusFuer, setNotAusFuer] = useState<string | null>(null);
@@ -71,15 +81,24 @@ export function Schreibpfad({ z, nachKommando }: { z: Zustand; nachKommando: () 
             <div
               key={p.park.id}
               id={`eingreifen-${p.park.id}`}
+              onMouseEnter={() => onFeld(p.park.id)}
+              onMouseLeave={() => onFeld(null)}
+              /* onFocus/onBlur steigen in React auf, deshalb genügt der
+                 Container: wer sich per Tab durch die Knöpfe arbeitet, sieht
+                 oben im Lageplan das passende Feld mitlaufen. */
+              onFocus={() => onFeld(p.park.id)}
+              onBlur={() => onFeld(null)}
               /* Sprungziel für den Alarmstreifen. scrollMarginTop hält die
                  Karte unter der klebenden Navigation frei — ohne das landet
                  sie beim Sprung genau darunter. */
               style={{
                 scrollMarginTop: 72,
                 background: "var(--sk-canvas-bg)",
-                border: "1px solid var(--color-muted)",
+                border: feldAktiv === p.park.id ? "2px solid var(--color-text)" : "1px solid var(--color-muted)",
                 borderRadius: "var(--radius-md)",
-                padding: 16,
+                /* Ein Pixel weniger Polster, wenn der Rahmen ein Pixel
+                   breiter wird — sonst springt der Inhalt beim Überfahren. */
+                padding: feldAktiv === p.park.id ? 15 : 16,
               }}
             >
               <div className="sk-text-titel">{p.park.name}</div>

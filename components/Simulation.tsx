@@ -90,6 +90,14 @@ export function Simulation({ initial }: { initial: Zustand }) {
      sonst sieht der Bediener seine eigene Wirkung erst zwei Sekunden später. */
   const [anstoss, setAnstoss] = useState(0);
 
+  /* Welches Feld gerade angesehen wird. Der Zustand liegt hier, weil ihn
+     zwei Geschwister brauchen: der Lageplan zeigt das Feld, „Eingreifen"
+     bedient es. Wer im Plan darüberfährt, sieht unten die zugehörige Karte
+     aufleuchten — und wer unten eine Karte anfasst oder antabbt, sieht oben
+     das Feld. Der Weg bleibt zwei Blicke lang, aber man verliert das Feld
+     dabei nicht. */
+  const [feldAktiv, setFeldAktiv] = useState<string | null>(null);
+
   useEffect(() => {
     let lebt = true;
     const hol = async () => {
@@ -140,9 +148,14 @@ export function Simulation({ initial }: { initial: Zustand }) {
         </div>
       )}
         <Alarmstreifen z={z} />
-        <Lageplan z={z} />
+        <Lageplan z={z} feldAktiv={feldAktiv} onFeld={setFeldAktiv} />
       </div>
-      <Schreibpfad z={z} nachKommando={() => setAnstoss((n) => n + 1)} />
+      <Schreibpfad
+        z={z}
+        nachKommando={() => setAnstoss((n) => n + 1)}
+        feldAktiv={feldAktiv}
+        onFeld={setFeldAktiv}
+      />
     </>
   );
 }
