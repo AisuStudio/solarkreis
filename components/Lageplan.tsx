@@ -77,7 +77,14 @@ export function Lageplan({ z }: { z: Zustand }) {
       stand: wetter?.origin ?? "offen",
       hinweis: wetter?.label,
     },
-    { id: "awattar", name: "aWATTar", zeile: "Day-Ahead-Spotpreis", fluss: "read", stand: "offen", hinweis: "Schritt 5" },
+    {
+      id: "awattar",
+      name: "aWATTar",
+      zeile: "Day-Ahead-Spotpreis",
+      fluss: "read",
+      stand: z.preis.source?.origin ?? "offen",
+      hinweis: z.preis.source?.label ?? "kein Preis für diese Stunde",
+    },
     { id: "firms", name: "NASA FIRMS", zeile: "aktive Feuer", fluss: "read", stand: "offen", hinweis: "Schritt 8" },
     { id: "operator", name: "Operator", zeile: `${z.operatorId} · schreibt, liest nicht`, fluss: "write", stand: "simuliert", hinweis: "Stub, kein Auth" },
   ];

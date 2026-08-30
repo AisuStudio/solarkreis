@@ -1,10 +1,12 @@
 /*
   Die Kennzahlenleiste. Sechs Zellen, jede mit ihrer Herkunft.
 
-  Zwei Zellen stehen bewusst auf „—": Preis und Ertrag hängen an aWATTar, und
-  der ist noch nicht angeschlossen (Schritt 5 der Bauordnung). Eine erfundene
-  Zahl wäre die schnellere, aber falsche Lösung — das ganze Stück argumentiert
-  gegen Anzeigen, die etwas behaupten, was nicht gemessen ist.
+  Preis und Ertrag kommen seit Schritt 5 aus aWATTar. Liegt kein Preis vor,
+  steht dort „—" und nicht der letzte bekannte Wert: eine Anzeige, die bei
+  totem Feed weiterzeigt, behauptet etwas.
+
+  Der Ertrag kann negativ sein. Das wird nicht versteckt — an genau dieser
+  Zahl hängt die Entscheidung, ob der Speicher lädt statt einzuspeisen.
 */
 
 import type { Zustand } from "@/lib/zustand";
@@ -76,8 +78,28 @@ export function StatusBar({ z }: { z: Zustand }) {
         wert={`${nf(mw)} MW`}
         herkunft={`von ${nf(grenzeMw)} MW Netzgrenze`}
       />
-      <Zelle label="Preis" wert="—" herkunft="aWATTar, Schritt 5" offen />
-      <Zelle label="Ertrag" wert="—" herkunft="braucht den Preis" offen />
+      <Zelle
+        label="Preis"
+        wert={z.preis.eur_mwh === null ? "—" : `${nf(z.preis.eur_mwh, 2)} €/MWh`}
+        herkunft={
+          z.preis.eur_mwh === null
+            ? "kein Preis für diese Stunde"
+            : `${z.preis.source?.origin ?? "?"} · ${Math.round((z.preis.alterMs ?? 0) / 60000)} min alt`
+        }
+        offen={z.preis.eur_mwh === null}
+      />
+      <Zelle
+        label="Ertrag"
+        wert={z.preis.ertrag_eur_h === null ? "—" : `${nf(z.preis.ertrag_eur_h, 0)} €/h`}
+        herkunft={
+          z.preis.ertrag_eur_h === null
+            ? "braucht den Preis"
+            : z.preis.ertrag_eur_h < 0
+              ? "negativ — Einspeisen kostet"
+              : "Leistung × Spotpreis"
+        }
+        offen={z.preis.ertrag_eur_h === null}
+      />
       <Zelle
         label="Speicher"
         wert={`${soc} % · ${z.speicher.mode}`}

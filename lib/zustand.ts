@@ -18,12 +18,22 @@ import { PARKS, STORAGE } from "./seed";
 import { projectStorage } from "./storage";
 import { simNow, store } from "./store";
 import { openMeteo } from "./openmeteo";
+import { ertragEurProStunde, preisStand, refreshPreise } from "./awattar";
 
 export async function zustand(ts: number = simNow()) {
-  await openMeteo.refresh(PARKS, ts);
+  /* Beide Quellen parallel: sie hängen nicht voneinander ab, und
+     nacheinander würde der Zustand über zwei Netzlaufzeiten altern. */
+  await Promise.all([openMeteo.refresh(PARKS, ts), refreshPreise()]);
+
+  const kreis = snapshot(ts, openMeteo);
+  const preis = preisStand(ts);
 
   return {
-    ...snapshot(ts, openMeteo),
+    ...kreis,
+    preis: {
+      ...preis,
+      ertrag_eur_h: ertragEurProStunde(kreis.total_kw, preis.eur_mwh),
+    },
     speicher: {
       stamm: STORAGE,
       ...projectStorage(ts),
