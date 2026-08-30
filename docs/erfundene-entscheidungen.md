@@ -22,6 +22,19 @@ Karte zu einem Bedienfeld machen, und der Hero verliert seine Aussage.
 *Alternative, falls das falsch ist:* Bedienung im Lageplan an den Feldknoten,
 dann muss der Hero aber neu gedacht werden.
 
+**Bestätigt am 30.08.** Doms Vorschlag war eine Schaltwarte im Hover über den
+Feldkarten. Dagegen sprachen drei Dinge: auf dem Touchgerät gibt es kein
+Hover, unsichtbare Bedienelemente werden in neunzig Sekunden nicht gefunden,
+und der Not-Aus wäre das am besten versteckte Element der Seite gewesen.
+Gebaut ist stattdessen die Verkopplung: Zeiger auf ein Feld im Lageplan hebt
+die zugehörige Karte unter „Eingreifen" hervor und umgekehrt, auch per Tab.
+Zwei Blicke bleiben zwei Blicke, aber man verliert das Feld nicht.
+
+Bei der Gelegenheit ist der gestrichelte Ring zwischen den Feldern gefallen.
+Dom fand unklar, was die Felder untereinander austauschen — die Antwort aus
+dem Modell lautet: nichts. Die Linie behauptete eine Beziehung, die es nicht
+gibt.
+
 ---
 
 ### 2 · Sollwert als vier Knöpfe (100 / 75 / 50 / 0 %), kein Schieberegler
@@ -88,3 +101,6 @@ weil die letzte Handlung die ist, deren Wirkung man sucht.
 
 *Bewusste Grenze:* auf Vercel ist das Log nach einem Kaltstart leer. Der Store
 liegt im Speicher, nicht in einer Datenbank. Das steht so auch in der README.
+
+**Erledigt am 30.08.** Der Strom sitzt jetzt in einem eigenen Rahmen mit
+fester Höhe statt die Seite um mehrere Bildschirmhöhen zu verlängern.
