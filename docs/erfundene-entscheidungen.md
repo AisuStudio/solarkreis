@@ -72,6 +72,16 @@ damit nur als Großtext AA klärt.
 wenn er nur bei Ablehnung sichtbar wird, sieht man nie, dass er bei jedem
 Kommando läuft. Grün heißt hier „geprüft und durchgelassen", nicht „gemacht".
 
+*Alternative (beim Durchgang nachgetragen):* eine dauerhafte Zeile statt einer
+Meldung pro Klick — sie zeigt immer den letzten Prüfvorgang mit Zeitstempel.
+Immer sichtbar, ohne bei jedem Klick neu aufzutauchen. Kostet Fläche, gewinnt
+Ruhe.
+
+**Vorerst behalten, 30.08.** Doms Wort war „erstmal" — die Meldung pro Klick
+bleibt, die Dauerzeile ist nicht verworfen. Der Anlass, sie zu bauen, wäre
+jemand, der viele Sollwerte hintereinander setzt und die Meldungen dabei zu
+lesen aufhört.
+
 ---
 
 ### 5 · Sollwert wirkt auf den ganzen Park, nicht je Gerät
