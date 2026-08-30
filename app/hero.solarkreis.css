@@ -1,0 +1,175 @@
+/*
+  Stile des Hero. Aus dem Prototyp `public/hero.html` übernommen, damit die
+  eine Datei dort weiter lauffähig bleibt und man beide vergleichen kann.
+  Alles unter `.sk-hero` gescoped — die Rollen-Tokens werden dort lokal
+  gesetzt, weil waffles Dark-Regeln an :root hängen und sich nicht vererben.
+*/
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Der Hero ist eine Dunkel-Insel in einem Produkt, das auf hell festgenagelt
+   ist. Deshalb KEIN data-theme hier: waffles Dark-Regeln hängen an :root,
+   ein Kind-Container erbt sie nicht. Die Rollen werden lokal gesetzt, mit
+   exakt den Werten aus waffles Dark-Block. Kein neuer Farbwert.
+
+   Kontrast nachgerechnet gegen den Grund #14101f (L = 0,0066):
+     Text    #f1efe8   15,96:1
+     leise   #b3aec4    8,63:1   (im Dunkeln der richtige Sekundärton —
+                                  auf hellem Grund wären es nur 1,75:1)
+     Akzent  #b298ff    7,81:1
+     Signal  #d8ff01   16,10:1
+
+   Bahnen, gemessen gegen Grund #14101f und gegen Fläche #221c33:
+     read      pistachio-3  #92c982   9,64:1  ·  8,50:1
+     write     mango-5      #ec6608   5,72:1  ·  5,05:1
+     r&w       raspberry-3  #ee72b6   6,82:1  ·  6,02:1
+     kritisch  strawberry-3 #e9634f   5,62:1  ·  4,96:1
+   Alle vier über den 3:1 aus WCAG 1.4.11. Im Hellen tragen dieselben Bahnen
+   Level 5 und brauchen eine Ink-Fassung, weil mango-5 dort auf 2,65:1 fällt.
+   Im Dunkeln ist die Fassung unnötig — sie wäre hier sogar schädlich, weil
+   Ink auf dem dunklen Grund verschwindet.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.sk-hero {
+  --grund:    #14101f;
+  --flaeche:  #221c33;
+  --flaeche2: #1b1628;
+  --text:     #f1efe8;
+  --leise:    #b3aec4;
+  --akzent:   #b298ff;
+  --signal:   #d8ff01;
+  --rahmen:   rgba(241,239,232,.14);
+
+  --read: #92c982;
+  --write:#ec6608;
+  --rw:   #ee72b6;
+  --krit: #e9634f;
+
+  --font-text: var(--font-primary, "Public Sans", "Helvetica Neue", Arial, sans-serif);
+  --font-zahl: var(--font-tertiary, "iA Writer Mono", ui-monospace, "SF Mono", Menlo, monospace);
+
+  background: var(--grund);
+  color: var(--text);
+  border-radius: 10px;
+  overflow: hidden;
+  font-family: var(--font-text);
+  container-type: inline-size;
+}
+
+/* Die Figma-Maße: Bild 1214 × 584. Gehalten über das Seitenverhältnis,
+   damit der Hero beim Skalieren nicht kippt. Toleranz nach unten nutzt die
+   Bildunterschrift, die außerhalb der Bühne sitzt. */
+.sk-hero__stage { display: block; width: 100%; }
+.sk-hero__stage svg { display: block; width: 100%; height: auto; }
+
+.sk-hero__unten {
+  display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap;
+  padding: 0 24px 20px;
+}
+.sk-hero__bu { font-size: 13px; line-height: 1.55; color: var(--leise); margin: 0; max-width: 68ch; }
+.sk-hero__takt { font-family: var(--font-zahl); font-size: 12px; color: var(--leise); margin: 0; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ── Knoten ───────────────────────────────────────────────────────────── */
+.knoten rect { fill: var(--flaeche); stroke: var(--rahmen); stroke-width: 1; }
+.knoten .titel { fill: var(--text); font-size: 14px; font-weight: 700; }
+.knoten .zeile { fill: var(--leise); font-size: 12px; font-family: var(--font-zahl); }
+.gruppe-label {
+  fill: var(--leise); font-size: 12px; font-family: var(--font-zahl);
+  letter-spacing: .08em; text-transform: uppercase;
+}
+
+/* Knoten atmen kurz auf, wenn sie angesprochen werden. Nur transform und
+   opacity — kein Layout pro Bild. */
+.knoten { transform-box: fill-box; transform-origin: center; }
+.knoten.an rect { stroke: var(--akzent); stroke-width: 2; }
+.knoten.an { animation: atmen 1.6s ease-in-out infinite; }
+@keyframes atmen {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.012); }
+}
+
+/* ── Bahnen ───────────────────────────────────────────────────────────── */
+.bahn { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+        opacity: .28; transition: opacity .5s ease; }
+.bahn.an { opacity: 1; }
+.bahn--read { stroke: var(--read); }
+.bahn--write{ stroke: var(--write); }
+.bahn--rw   { stroke: var(--rw); }
+.bahn--krit { stroke: var(--krit); }
+.bahn--kreis { stroke-dasharray: 7 6; }
+
+/* Impulse laufen an den Bahnen entlang. offset-path bewegt per transform,
+   die d-Angabe holt sich das Skript aus dem Pfad selbst — so kann die
+   Geometrie nicht auseinanderlaufen. */
+.impuls { opacity: 0; transition: opacity .35s ease; }
+.impuls.an { opacity: 1; animation: laufen 2.2s linear infinite; }
+@keyframes laufen { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+
+/* ── Summenband ───────────────────────────────────────────────────────── */
+.band-grund { fill: var(--flaeche2); }
+.band-fuell { fill: var(--rw); transform-box: fill-box; transform-origin: left center;
+              transform: scaleX(var(--fuell, .82)); transition: transform 1.2s ease; }
+.band-grenze { stroke: var(--signal); stroke-width: 2; }
+.band-grenze.an { animation: blinken 1s ease-in-out 3; }
+@keyframes blinken { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+
+/* Achtung Spezifität: .knoten rect (0,1,1) schlägt .soc-fuell (0,1,0). Der
+   Balken liegt in einem .knoten, also muss der Selektor mitziehen — sonst
+   bleibt die Füllung in der Flächenfarbe stehen und der Ladestand ist
+   unsichtbar. Genau das war zuerst der Fall. */
+.knoten rect.soc-grund { fill: var(--flaeche2); }
+.knoten rect.soc-fuell {
+  fill: var(--write); transform-box: fill-box; transform-origin: left center;
+  transform: scaleX(var(--soc, .5)); transition: transform 2.4s ease;
+}
+
+/* ── Log ──────────────────────────────────────────────────────────────── */
+.log-rahmen { fill: var(--flaeche2); stroke: var(--rahmen); }
+.log-zeile { font-family: var(--font-zahl); font-size: 12px  /* 11,5 lag unter der Projekt-Untergrenze von 12 */; fill: var(--leise);
+             opacity: 0; transition: opacity .5s ease; }
+.log-zeile.an { opacity: 1; }
+.log-zeile .art { fill: var(--text); }
+
+/* ── Kompaktfassung unter 600 px ──────────────────────────────────────── */
+.sk-hero__kompakt { display: none; padding: 20px 20px 4px; }
+.sk-hero__kompakt ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+/* Zustand über die Textfarbe, NICHT über Deckkraft. --leise auf 50 % gedimmt
+   misst gegen den Grund nur 3,01:1 und fällt für Fließtext durch. Ungedimmt
+   sind es 8,63:1, der aktive Schritt in --text hat 15,96:1. Beide klären AA,
+   und der Unterschied bleibt sichtbar. */
+.sk-hero__kompakt li {
+  display: grid; grid-template-columns: 10px 1fr; gap: 10px; align-items: start;
+  font-size: 13px; line-height: 1.5; color: var(--leise);
+  transition: color .4s ease;
+}
+.sk-hero__kompakt li b { font-weight: 700; color: inherit; }
+.sk-hero__kompakt li.an { color: var(--text); }
+.sk-hero__kompakt li.an .marke { box-shadow: 0 0 0 3px var(--rahmen); }
+.sk-hero__kompakt .marke { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; }
+
+@container (max-width: 600px) {
+  .sk-hero__stage { display: none; }
+  .sk-hero__kompakt { display: block; }
+}
+/* Rückfall für Browser ohne Container-Queries */
+@media (max-width: 600px) {
+  .sk-hero__stage { display: none; }
+  .sk-hero__kompakt { display: block; }
+}
+
+/* ── Ruhe ─────────────────────────────────────────────────────────────────
+   Kein Ersatz-Autoplay, kein langsameres Abspielen: ein ruhiger Endzustand,
+   in dem alle sechs Beats gleichzeitig ablesbar sind.                      */
+@media (prefers-reduced-motion: reduce) {
+  .bahn { opacity: 1; }
+  .impuls { display: none; }
+  .knoten.an { animation: none; }
+  .band-grenze.an { animation: none; }
+  .log-zeile { opacity: 1; }
+  .sk-hero__kompakt li { color: var(--text); }
+  .band-fuell, .soc-fuell { transition: none; }
+}

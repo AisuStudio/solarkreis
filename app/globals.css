@@ -3,6 +3,7 @@
 @import "./waffle/components.css";
 @import "./tokens.solarkreis.css";
 @import "./type.solarkreis.css";
+@import "./hero.solarkreis.css";
 
 /* ─── Tokens für Tailwind-Utilities öffnen ──────────────────────────────
    @theme inline gibt die Werte in die Utilities hinein, ohne die Variablen
@@ -84,9 +85,16 @@ h4, h5, h6 { font-family: var(--font-primary); font-weight: 700; margin: 0; }
 
 a { color: var(--color-accent); }
 
+/* Doppelring, weil ein einfarbiger Ring nicht auf beiden Gründen tragen kann:
+   grape misst gegen die Ink-Leiste nur 2,24:1 und verfehlt die 3:1, die
+   WCAG 1.4.11 für einen Fokusindikator verlangt — auf hellem Grund sind es
+   7,81:1. Lemon ist genau umgekehrt (16,1:1 auf Ink, 1,35:1 auf Vanilla).
+   Deshalb beide: innen lemon, außen ink. Auf jedem Untergrund trägt einer
+   der beiden Ringe. */
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-highlight);
   outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--color-text);
   border-radius: var(--radius-xs);
 }
 
@@ -96,4 +104,27 @@ a { color: var(--color-accent); }
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;
   }
+}
+
+
+/* ─── Lageplan: unter 760 px stapeln ───────────────────────────────────
+   Die Seitenspalte ist 272 px breit. Bei 320 px Fensterbreite blieben dem
+   Canvas 48 px — dort ist nichts mehr lesbar, und WCAG 1.4.10 verlangt,
+   dass bei 320 px nicht seitlich gescrollt werden muss. Also stapeln.   */
+.sk-lageplan { display: flex; align-items: stretch; }
+.sk-lageplan__spalte { width: 272px; flex: 0 0 272px; }
+.sk-lageplan__canvas { flex: 1; min-width: 0; }
+
+@media (max-width: 760px) {
+  .sk-lageplan { flex-direction: column; }
+  .sk-lageplan__spalte { width: auto; flex: none; }
+}
+
+/* Die Kennzahlenleiste bricht mit, sonst quetschen sich sechs Zellen
+   nebeneinander und die Zahlen brechen mitten im Wert um. */
+@media (max-width: 900px) {
+  .sk-statusleiste { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+}
+@media (max-width: 520px) {
+  .sk-statusleiste { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 }

@@ -40,9 +40,13 @@ function versatzKm(lat: number, lon: number) {
 }
 
 const BREITE = 1120;
-const HOEHE = 660;
-const MITTE = { x: 545, y: 330 };
-const RADIUS_PX = 232;
+const HOEHE = 720;
+const MITTE = { x: 545, y: 300 };
+const RADIUS_PX = 250;
+/* Der Speicher steht am HQ, aber rechts unter ihm statt direkt darunter:
+   direkt darunter lag er auf Feld Süd, weil Süd geografisch nach Südwesten
+   fällt. Ein kurzer Stich verbindet ihn mit der Zentrale. */
+const SPEICHER = { x: MITTE.x + 185, y: MITTE.y + 95 };
 
 /* ── Farbrollen der Bahnen ───────────────────────────────────────────────── */
 type Fluss = "read" | "write" | "rw";
@@ -97,9 +101,14 @@ export function Lageplan({ z }: { z: Zustand }) {
     { id: "operator", name: "Operator", zeile: `${z.operatorId} · schreibt, liest nicht`, fluss: "write", stand: "simuliert", hinweis: "Stub, kein Auth" },
   ];
 
-  /* Die Bahnen der Quellen treten am linken Canvas-Rand ein, auf der Höhe
-     ihrer Karte. Sie laufen dort weiter, wo die Karte aufhört. */
+  /* Die Bahnen treten am linken Rand auf Höhe ihrer Karte ein und laufen
+     rechtwinklig — wie im Wireframe. Jede bekommt eine eigene Steigleitung
+     und einen eigenen Anschlusspunkt am HQ, sonst kleben sie aneinander und
+     man sieht nicht mehr, welche zu welcher Karte gehört. Doms Vorgabe aus
+     dem Entwurf waren rund 20 px Abstand. */
   const eintritt = (i: number) => 118 + i * 132;
+  const steigleitung = (i: number) => 150 + i * 20;
+  const anschluss = (i: number) => MITTE.y - 27 + i * 18;
 
   const felder = z.parks.map((p) => {
     const v = versatzKm(p.park.lat, p.park.lon);
@@ -125,10 +134,11 @@ export function Lageplan({ z }: { z: Zustand }) {
   };
 
   return (
-    <div style={{ display: "flex", alignItems: "stretch", minHeight: HOEHE }}>
+    <div className="sk-lageplan">
       {/* ── Seitenspalte ────────────────────────────────────────────────── */}
       <aside
-        style={{ width: 272, flex: "0 0 272px", background: "var(--color-text)", padding: "20px 24px" }}
+        className="sk-lageplan__spalte"
+        style={{ background: "var(--color-text)", padding: "20px 24px" }}
         aria-label="Externe Quellen und Akteure"
       >
         <div className="sk-mono-eyebrow" style={{ color: "var(--color-hazelnut)" }}>
@@ -150,7 +160,7 @@ export function Lageplan({ z }: { z: Zustand }) {
       </aside>
 
       {/* ── Canvas ──────────────────────────────────────────────────────── */}
-      <div style={{ flex: 1, background: "var(--sk-canvas-bg)", minWidth: 0 }}>
+      <div className="sk-lageplan__canvas" style={{ background: "var(--sk-canvas-bg)" }}>
         <svg
           viewBox={`0 0 ${BREITE} ${HOEHE}`}
           width="100%"
@@ -199,7 +209,7 @@ export function Lageplan({ z }: { z: Zustand }) {
           {quellen.map((q, i) => (
             <Bahn
               key={`quelle-${q.id}`}
-              d={`M 0 ${eintritt(i)} H 120 Q 170 ${eintritt(i)} 170 ${eintritt(i) + Math.sign(MITTE.y - eintritt(i)) * 40} V ${MITTE.y - Math.sign(MITTE.y - eintritt(i)) * 40} Q 170 ${MITTE.y} 220 ${MITTE.y} H ${MITTE.x - 78}`}
+              d={`M 0 ${eintritt(i)} H ${steigleitung(i)} V ${anschluss(i)} H ${MITTE.x - 82}`}
               fluss={q.fluss}
               gerichtet
               opacity={bahnOpacity(q.id)}
@@ -210,8 +220,8 @@ export function Lageplan({ z }: { z: Zustand }) {
           <Knoten
             x={MITTE.x}
             y={MITTE.y}
-            w={156}
-            h={78}
+            w={172}
+            h={92}
             dunkel
             eyebrow="Zentrale"
             titel={`HQ ${HQ.place}`}
@@ -221,12 +231,19 @@ export function Lageplan({ z }: { z: Zustand }) {
             ]}
           />
 
-          {/* Speicher, direkt unter dem HQ */}
+          {/* Kurzer Stich HQ → Speicher. Keine Flussbahn, deshalb schlicht. */}
+          <path
+            d={`M ${MITTE.x + 40} ${MITTE.y + 40} L ${SPEICHER.x - 40} ${SPEICHER.y - 20}`}
+            fill="none"
+            stroke="var(--color-muted)"
+            strokeWidth="1.5"
+            strokeDasharray="4 4"
+          />
           <Knoten
-            x={MITTE.x}
-            y={MITTE.y + 108}
-            w={156}
-            h={62}
+            x={SPEICHER.x}
+            y={SPEICHER.y}
+            w={170}
+            h={76}
             eyebrow="Speicher"
             titel={`${z.speicher.stamm.capacity_kwh / 1000} MWh · ${z.speicher.stamm.power_kw / 1000} MW`}
             zeilen={[`${Math.round(z.speicher.soc * 100)} % · ${z.speicher.mode}`]}
@@ -238,12 +255,12 @@ export function Lageplan({ z }: { z: Zustand }) {
               key={f.park.id}
               x={f.x}
               y={f.y}
-              w={166}
-              h={72}
+              w={182}
+              h={88}
               titel={f.park.name}
               eyebrow={undefined}
               zeilen={[
-                f.park.place.split("—")[0].trim(),
+                f.park.place.split(/[,—]/)[0].trim(),
                 `${fmt(f.output_kw / 1000)} von ${fmt(f.park.capacity_kw / 1000)} MW`,
               ]}
             />

@@ -67,6 +67,7 @@ export function StatusBar({ z }: { z: Zustand }) {
 
   return (
     <div
+      className="sk-statusleiste"
       style={{
         display: "grid",
         gridTemplateColumns: "repeat(6, minmax(0, 1fr))",

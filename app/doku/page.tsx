@@ -160,7 +160,7 @@ export default function DokuSeite() {
             </H>
             <H t="Die Automatik hat keine Abkürzung">
               Sie geht durch denselben Wächter wie ein Mensch und kann nichts, was ein Bediener
-              nicht auch dürfte. Sonst hieße fail-closed nur „fail-closed für Menschen".
+              nicht auch dürfte. Sonst hieße fail-closed nur {"„fail-closed für Menschen“"}.
             </H>
             <H t="Feuer meldet, aber schaltet nicht">
               Der Not-Aus bleibt beim Menschen. Eine Anlage stillzulegen, weil ein Satellit
@@ -224,7 +224,7 @@ export default function DokuSeite() {
 
           <A n="10" t="Bewusst nicht gebaut">
             <H t="Jeder Eintrag nennt seine Messung">
-              Ein „passt nicht ins Scope" ohne Beleg ist eine Behauptung, keine Entscheidung.
+              {"Ein „passt nicht ins Scope“ ohne Beleg ist eine Behauptung, keine Entscheidung."}
               Die Langfassung steht in <code className="sk-mono-kompakt">docs/scope-out.md</code>.
             </H>
             <E

@@ -1,13 +1,14 @@
 /*
   Die Introseite. Text und Aufbau aus dem Figma-Entwurf F.
 
-  Der animierte Hero aus `public/hero.html` ist noch nicht als Komponente
-  eingehängt — er liegt als Prototyp daneben und wird verlinkt, statt hier
-  halb nachgebaut zu werden.
+  Der Hero ist die Komponente aus `components/Hero.tsx`. Der Prototyp
+  `public/hero.html` bleibt als eine Datei liegen, damit man beide
+  nebeneinander halten kann.
 */
 
 import Link from "next/link";
 import { TopNav } from "@/components/TopNav";
+import { Hero } from "@/components/Hero";
 
 export const metadata = {
   title: "SolarKreis — Monitoring-Simulation mit echten Inputs",
@@ -69,6 +70,10 @@ export default function Startseite() {
           Feuerdaten. Gebaut, um ein Muster zu zeigen: wie aus einer Anzeige, die nur liest,
           ein System wird, das kommuniziert und kontrolliert eingreifen kann.
         </p>
+
+        <div style={{ marginTop: "var(--sp-xl)" }}>
+          <Hero />
+        </div>
 
         <div style={{ display: "flex", gap: "var(--sp-md)", marginTop: "var(--sp-lg)", flexWrap: "wrap" }}>
           <Link href="/simulation" className="wf-btn wf-btn-primary" style={{ padding: "10px 18px", borderRadius: "var(--radius-sm)" }}>
@@ -168,7 +173,7 @@ export default function Startseite() {
 
         <footer style={{ marginTop: "var(--sp-3xl)", display: "flex", gap: "var(--sp-2xl)", flexWrap: "wrap" }}>
           <Fuss t="Code auf GitHub ↗" u="github.com/AisuStudio/solarkreis" href="https://github.com/AisuStudio/solarkreis" />
-          <Fuss t="Hero-Prototyp ↗" u="public/hero.html" href="/hero.html" />
+          <Fuss t="Hero als eine Datei ↗" u="public/hero.html" href="/hero.html" />
           <Fuss t="Datenquellen ↗" u="was gerade wirklich antwortet" href="/datenquellen" />
         </footer>
       </main>
