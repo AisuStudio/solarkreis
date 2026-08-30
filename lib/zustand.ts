@@ -20,11 +20,12 @@ import { simNow, store } from "./store";
 import { openMeteo } from "./openmeteo";
 import { ertragEurProStunde, preisStand, refreshPreise } from "./awattar";
 import { auffaelligkeiten, automatik } from "./automatik";
+import { feuerStand, refreshFeuer } from "./firms";
 
 export async function zustand(ts: number = simNow()) {
   /* Beide Quellen parallel: sie hängen nicht voneinander ab, und
      nacheinander würde der Zustand über zwei Netzlaufzeiten altern. */
-  await Promise.all([openMeteo.refresh(PARKS, ts), refreshPreise()]);
+  await Promise.all([openMeteo.refresh(PARKS, ts), refreshPreise(), refreshFeuer(ts)]);
 
   const kreis = snapshot(ts, openMeteo);
   const preis = preisStand(ts);
@@ -44,6 +45,7 @@ export async function zustand(ts: number = simNow()) {
       stamm: STORAGE,
       ...projectStorage(ts),
     },
+    feuer: feuerStand(),
     regel,
     alarme: auffaelligkeiten(),
     clock: store().clock,

@@ -26,6 +26,7 @@ import { ladder, projectStorage } from "./storage";
 import { append, simNow, store } from "./store";
 import { ausfuehren } from "./kommando";
 import { preisStand } from "./awattar";
+import { feuerStand } from "./firms";
 
 /** Schwellen der Leiter. Betreibergrößen, hier als Konstanten. */
 const LADEN_UNTER = 0;      // negativer Preis: einspeisen kostet
@@ -52,6 +53,7 @@ export interface AutomatikErgebnis {
  * geraten. Der Wächter würde ohnehin blockieren.
  */
 export function automatik(total_kw: number, ts: number = simNow()): AutomatikErgebnis {
+  feuerAlarm(ts);
   const preis = preisStand(ts);
 
   if (preis.eur_mwh === null) {
@@ -114,6 +116,32 @@ export function automatik(total_kw: number, ts: number = simNow()): AutomatikErg
     entscheidung: { speicher: d.storage, drosseln: d.curtail, grund: d.reason },
     gehandelt,
   };
+}
+
+/*
+  Feuer meldet, aber schaltet nicht.
+
+  Der Not-Aus bleibt beim Menschen. Ein Satellitentreffer ist eine
+  Wärmedetektion, keine Gefahrenmeldung — bei 137 von 153 Treffern lautet die
+  Konfidenz "nominal", und Ende August in Brandenburg ist das meist ein
+  Stoppelfeuer. Eine Anlage automatisch stillzulegen, weil ein Satellit Wärme
+  gesehen hat, wäre die falsche Richtung von fail-closed: der sichere Zustand
+  ist hier "Mensch informieren", nicht "Feld abschalten".
+*/
+function feuerAlarm(ts: number): void {
+  const f = feuerStand();
+  const schlimmster = f.relevant[0];
+  if (!schlimmster) return;
+
+  alarm(ts, {
+    type: "waldbrand",
+    severity: schlimmster.stufe === "kritisch" ? "kritisch" : "warnung",
+    park_id: schlimmster.park_id,
+    message:
+      `${f.relevant.length} relevante Wärmedetektionen. Nächste ${schlimmster.abstand_km.toFixed(1)} km ` +
+      `von ${schlimmster.park_id} mit ${schlimmster.frp.toFixed(1)} MW` +
+      (schlimmster.demo ? " — DEMO-SZENARIO, kein echter Treffer." : ". Not-Aus wartet auf einen Menschen."),
+  });
 }
 
 /** Das Feld mit der kleinsten installierten Leistung. Wer viel liefert, wird

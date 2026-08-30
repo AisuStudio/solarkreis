@@ -85,7 +85,15 @@ export function Lageplan({ z }: { z: Zustand }) {
       stand: z.preis.source?.origin ?? "offen",
       hinweis: z.preis.source?.label ?? "kein Preis für diese Stunde",
     },
-    { id: "firms", name: "NASA FIRMS", zeile: "aktive Feuer", fluss: "read", stand: "offen", hinweis: "Schritt 8" },
+    {
+      id: "firms",
+      name: "NASA FIRMS",
+      zeile: `aktive Feuer · ${z.feuer.umkreis_km} km, ${z.feuer.tage} Tage`, fluss: "read",
+      stand: z.feuer.source.origin,
+      hinweis: z.feuer.demoAn
+        ? "Demo-Szenario an"
+        : `${z.feuer.imUmkreis.length} Hotspots im Umkreis`,
+    },
     { id: "operator", name: "Operator", zeile: `${z.operatorId} · schreibt, liest nicht`, fluss: "write", stand: "simuliert", hinweis: "Stub, kein Auth" },
   ];
 
