@@ -34,10 +34,14 @@ Alle zehn Schritte abgeschlossen. Was danach offen bleibt, steht unten.
 | 9 | Datenquellen-Seite | ✓ `/datenquellen` |
 | 10 | Dokumentationsseite | ✓ `/doku`, an mehreren Stellen gegen die Messung nachgezogen |
 
-**Noch offen:** der animierte Hero liegt als Prototyp unter `public/hero.html` und ist
-noch keine React-Komponente · die Geometrie des Lageplans ist nicht sauber (Text schneidet
-in den Knotenkästen ab) · kein Deploy · Tastaturfokus und Reflow auf 320 px sind nicht
-geprüft.
+**Noch offen:** kein Deploy (braucht einen Vercel-Account) · die Simulation läuft auf
+einem Speicher-Store, nach einem Kaltstart ist das Log leer · echtes Auth statt des
+Operator-Stubs.
+
+**Geprüft, alles grün:** `npx tsc --noEmit` · `npx eslint .` · `npm run build` ·
+`npm run pruefen` (48 Prüfungen gegen die laufende Instanz) · Kontrast und
+Schriftgrößen über alle Seiten · Tastaturfokus mit Doppelring, der auf hellem und
+dunklem Grund trägt · kein seitliches Scrollen im schmalen Fenster.
 
 Außerhalb der Reihenfolge: `lib/glare.ts` als Beleg für eine Absage (siehe unten),
 ein Hero-Prototyp als eine Datei unter `public/hero.html`, und `scripts/pruefen.mjs` —
