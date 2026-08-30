@@ -62,6 +62,8 @@ damit nur als Großtext AA klärt.
 
 *Alternative:* modaler Dialog mit Tippbestätigung, falls das zu leicht auslöst.
 
+**Bestätigt am 30.08.** Ohne Änderung übernommen.
+
 ---
 
 ### 4 · Die Antwort des Wächters steht immer da, auch bei Zustimmung
