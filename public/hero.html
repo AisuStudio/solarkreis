@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SolarKreis — Hero</title>
+
+<!--
+  Arbeitsstand. Eine Datei, keine Bibliothek, kein Build.
+
+  Gebaut so, dass der Umzug nach React mechanisch ist: das Markup wird zu JSX,
+  die CSS-Regeln wandern in eine Modul-Datei, und die Schleife in useEffect.
+  Deshalb hängt nichts an globalen IDs außer innerhalb dieses einen Containers.
+
+  Was hier NICHT passiert: es wird nichts gezeigt, was die Simulation nicht
+  kann. Die Ereignisarten im Log heißen genau wie im Modell (abruf, messung,
+  kommando, auffaelligkeit). Die Netzgrenze ist 38,88 MW, weil sie im Code
+  38,88 MW ist. „Voll" heißt beim Speicher 95 % und nicht 100 %, weil max_soc
+  auf 0,95 steht — Tiefentlade- und Überladeschutz.
+-->
+
+<style>
+/* ─────────────────────────────────────────────────────────────────────────
+   Der Hero ist eine Dunkel-Insel in einem Produkt, das auf hell festgenagelt
+   ist. Deshalb KEIN data-theme hier: waffles Dark-Regeln hängen an :root,
+   ein Kind-Container erbt sie nicht. Die Rollen werden lokal gesetzt, mit
+   exakt den Werten aus waffles Dark-Block. Kein neuer Farbwert.
+
+   Kontrast nachgerechnet gegen den Grund #14101f (L = 0,0066):
+     Text    #f1efe8   15,96:1
+     leise   #b3aec4    8,63:1   (im Dunkeln der richtige Sekundärton —
+                                  auf hellem Grund wären es nur 1,75:1)
+     Akzent  #b298ff    7,81:1
+     Signal  #d8ff01   16,10:1
+
+   Bahnen, gemessen gegen Grund #14101f und gegen Fläche #221c33:
+     read      pistachio-3  #92c982   9,64:1  ·  8,50:1
+     write     mango-5      #ec6608   5,72:1  ·  5,05:1
+     r&w       raspberry-3  #ee72b6   6,82:1  ·  6,02:1
+     kritisch  strawberry-3 #e9634f   5,62:1  ·  4,96:1
+   Alle vier über den 3:1 aus WCAG 1.4.11. Im Hellen tragen dieselben Bahnen
+   Level 5 und brauchen eine Ink-Fassung, weil mango-5 dort auf 2,65:1 fällt.
+   Im Dunkeln ist die Fassung unnötig — sie wäre hier sogar schädlich, weil
+   Ink auf dem dunklen Grund verschwindet.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.sk-hero {
+  --grund:    #14101f;
+  --flaeche:  #221c33;
+  --flaeche2: #1b1628;
+  --text:     #f1efe8;
+  --leise:    #b3aec4;
+  --akzent:   #b298ff;
+  --signal:   #d8ff01;
+  --rahmen:   rgba(241,239,232,.14);
+
+  --read: #92c982;
+  --write:#ec6608;
+  --rw:   #ee72b6;
+  --krit: #e9634f;
+
+  --font-text: var(--font-primary, "Public Sans", "Helvetica Neue", Arial, sans-serif);
+  --font-zahl: var(--font-tertiary, "iA Writer Mono", ui-monospace, "SF Mono", Menlo, monospace);
+
+  background: var(--grund);
+  color: var(--text);
+  border-radius: 10px;
+  overflow: hidden;
+  font-family: var(--font-text);
+  container-type: inline-size;
+}
+
+/* Die Figma-Maße: Bild 1214 × 584. Gehalten über das Seitenverhältnis,
+   damit der Hero beim Skalieren nicht kippt. Toleranz nach unten nutzt die
+   Bildunterschrift, die außerhalb der Bühne sitzt. */
+.sk-hero__stage { display: block; width: 100%; }
+.sk-hero__stage svg { display: block; width: 100%; height: auto; }
+
+.sk-hero__unten {
+  display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap;
+  padding: 0 24px 20px;
+}
+.sk-hero__bu { font-size: 13px; line-height: 1.55; color: var(--leise); margin: 0; max-width: 68ch; }
+.sk-hero__takt { font-family: var(--font-zahl); font-size: 12px; color: var(--leise); margin: 0; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ── Knoten ───────────────────────────────────────────────────────────── */
+.knoten rect { fill: var(--flaeche); stroke: var(--rahmen); stroke-width: 1; }
+.knoten .titel { fill: var(--text); font-size: 14px; font-weight: 700; }
+.knoten .zeile { fill: var(--leise); font-size: 12px; font-family: var(--font-zahl); }
+.gruppe-label {
+  fill: var(--leise); font-size: 12px; font-family: var(--font-zahl);
+  letter-spacing: .08em; text-transform: uppercase;
+}
+
+/* Knoten atmen kurz auf, wenn sie angesprochen werden. Nur transform und
+   opacity — kein Layout pro Bild. */
+.knoten { transform-box: fill-box; transform-origin: center; }
+.knoten.an rect { stroke: var(--akzent); stroke-width: 2; }
+.knoten.an { animation: atmen 1.6s ease-in-out infinite; }
+@keyframes atmen {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.012); }
+}
+
+/* ── Bahnen ───────────────────────────────────────────────────────────── */
+.bahn { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+        opacity: .28; transition: opacity .5s ease; }
+.bahn.an { opacity: 1; }
+.bahn--read { stroke: var(--read); }
+.bahn--write{ stroke: var(--write); }
+.bahn--rw   { stroke: var(--rw); }
+.bahn--krit { stroke: var(--krit); }
+.bahn--kreis { stroke-dasharray: 7 6; }
+
+/* Impulse laufen an den Bahnen entlang. offset-path bewegt per transform,
+   die d-Angabe holt sich das Skript aus dem Pfad selbst — so kann die
+   Geometrie nicht auseinanderlaufen. */
+.impuls { opacity: 0; transition: opacity .35s ease; }
+.impuls.an { opacity: 1; animation: laufen 2.2s linear infinite; }
+@keyframes laufen { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+
+/* ── Summenband ───────────────────────────────────────────────────────── */
+.band-grund { fill: var(--flaeche2); }
+.band-fuell { fill: var(--rw); transform-box: fill-box; transform-origin: left center;
+              transform: scaleX(var(--fuell, .82)); transition: transform 1.2s ease; }
+.band-grenze { stroke: var(--signal); stroke-width: 2; }
+.band-grenze.an { animation: blinken 1s ease-in-out 3; }
+@keyframes blinken { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+
+/* Achtung Spezifität: .knoten rect (0,1,1) schlägt .soc-fuell (0,1,0). Der
+   Balken liegt in einem .knoten, also muss der Selektor mitziehen — sonst
+   bleibt die Füllung in der Flächenfarbe stehen und der Ladestand ist
+   unsichtbar. Genau das war zuerst der Fall. */
+.knoten rect.soc-grund { fill: var(--flaeche2); }
+.knoten rect.soc-fuell {
+  fill: var(--write); transform-box: fill-box; transform-origin: left center;
+  transform: scaleX(var(--soc, .5)); transition: transform 2.4s ease;
+}
+
+/* ── Log ──────────────────────────────────────────────────────────────── */
+.log-rahmen { fill: var(--flaeche2); stroke: var(--rahmen); }
+.log-zeile { font-family: var(--font-zahl); font-size: 11.5px; fill: var(--leise);
+             opacity: 0; transition: opacity .5s ease; }
+.log-zeile.an { opacity: 1; }
+.log-zeile .art { fill: var(--text); }
+
+/* ── Kompaktfassung unter 600 px ──────────────────────────────────────── */
+.sk-hero__kompakt { display: none; padding: 20px 20px 4px; }
+.sk-hero__kompakt ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+/* Zustand über die Textfarbe, NICHT über Deckkraft. --leise auf 50 % gedimmt
+   misst gegen den Grund nur 3,01:1 und fällt für Fließtext durch. Ungedimmt
+   sind es 8,63:1, der aktive Schritt in --text hat 15,96:1. Beide klären AA,
+   und der Unterschied bleibt sichtbar. */
+.sk-hero__kompakt li {
+  display: grid; grid-template-columns: 10px 1fr; gap: 10px; align-items: start;
+  font-size: 13px; line-height: 1.5; color: var(--leise);
+  transition: color .4s ease;
+}
+.sk-hero__kompakt li b { font-weight: 700; color: inherit; }
+.sk-hero__kompakt li.an { color: var(--text); }
+.sk-hero__kompakt li.an .marke { box-shadow: 0 0 0 3px var(--rahmen); }
+.sk-hero__kompakt .marke { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; }
+
+@container (max-width: 600px) {
+  .sk-hero__stage { display: none; }
+  .sk-hero__kompakt { display: block; }
+}
+/* Rückfall für Browser ohne Container-Queries */
+@media (max-width: 600px) {
+  .sk-hero__stage { display: none; }
+  .sk-hero__kompakt { display: block; }
+}
+
+/* ── Ruhe ─────────────────────────────────────────────────────────────────
+   Kein Ersatz-Autoplay, kein langsameres Abspielen: ein ruhiger Endzustand,
+   in dem alle sechs Beats gleichzeitig ablesbar sind.                      */
+@media (prefers-reduced-motion: reduce) {
+  .bahn { opacity: 1; }
+  .impuls { display: none; }
+  .knoten.an { animation: none; }
+  .band-grenze.an { animation: none; }
+  .log-zeile { opacity: 1; }
+  .sk-hero__kompakt li { color: var(--text); }
+  .band-fuell, .soc-fuell { transition: none; }
+}
+</style>
+</head>
+
+<body style="margin:0;background:#eae8e0;padding:24px;font-family:system-ui">
+<div style="max-width:1214px;margin:0 auto">
+
+<section class="sk-hero" id="hero" data-beat="1" aria-labelledby="hero-bu" aria-describedby="hero-lang">
+
+  <!-- Die Bühne ist rein dekorativ. Die Aussage steht als Text darunter. -->
+  <div class="sk-hero__stage" aria-hidden="true">
+    <svg viewBox="0 0 1200 500" role="presentation" focusable="false">
+
+      <text class="gruppe-label" x="32"  y="72">Außen · echte Feeds</text>
+      <text class="gruppe-label" x="262" y="72">Parks · simuliert</text>
+      <text class="gruppe-label" x="512" y="72">Kern</text>
+      <text class="gruppe-label" x="966" y="72">Event-Log</text>
+
+      <!-- ── Bahnen zuerst, damit die Knoten darüber liegen ────────────── -->
+      <g id="bahnen">
+        <!-- Open-Meteo speist die Parks: im Code geht die Einstrahlung in
+             readingFor(), nicht in die Regel. -->
+        <path id="p-om"    class="bahn bahn--read" d="M202 124 H232 M232 124 V284 M232 124 H262 M232 204 H262 M232 284 H262"/>
+        <!-- Die Parks melden Messwerte an die Normalisierung. -->
+        <path id="p-parks" class="bahn bahn--rw" d="M442 124 H482 M442 204 H482 M442 284 H482 M482 284 V124 H512"/>
+        <!-- aWATTar läuft unter der Parkspalte durch zur Kreis-Regel. -->
+        <path id="p-awa"   class="bahn bahn--read" d="M202 204 H222 V344 H496 V204 H512"/>
+        <!-- FIRMS ist die kritische Bahn und endet am Not-Aus. -->
+        <path id="p-firms" class="bahn bahn--krit" d="M202 284 H212 V376 H742 V284 H752"/>
+        <!-- Innen: Normalisierung → Kreis-Regel → Wächter -->
+        <path id="p-nr"    class="bahn bahn--read" d="M602 152 V176"/>
+        <path id="p-rw"    class="bahn bahn--read" d="M602 232 V256"/>
+        <!-- Das einzige durchgelassene Kommando: laden. -->
+        <path id="p-lade"  class="bahn bahn--write" d="M692 284 H712 V140 H752"/>
+        <!-- Erst wenn der Speicher voll ist: drosseln, zurück in die Felder. -->
+        <path id="p-dros"  class="bahn bahn--write" d="M512 300 H492 V416 H352 V312"/>
+        <!-- Jedes Kommando fällt ins Log. -->
+        <path id="p-log"   class="bahn bahn--write" d="M692 296 H732 V400 H1067 V312"/>
+        <!-- Der Not-Aus meldet sich, führt aber nicht aus. -->
+        <path id="p-na"    class="bahn bahn--krit" d="M922 284 H966"/>
+      </g>
+
+      <g id="impulse">
+        <circle class="impuls" r="4" fill="var(--read)"  data-bahn="p-om"/>
+        <circle class="impuls" r="4" fill="var(--rw)"    data-bahn="p-parks"/>
+        <circle class="impuls" r="4" fill="var(--read)"  data-bahn="p-awa"/>
+        <circle class="impuls" r="4" fill="var(--krit)"  data-bahn="p-firms"/>
+        <circle class="impuls" r="4" fill="var(--write)" data-bahn="p-lade"/>
+        <circle class="impuls" r="4" fill="var(--write)" data-bahn="p-dros"/>
+        <circle class="impuls" r="4" fill="var(--write)" data-bahn="p-log"/>
+      </g>
+
+      <!-- ── Knoten ───────────────────────────────────────────────────── -->
+      <g class="knoten" id="k-om"><rect x="32" y="96" width="170" height="56" rx="8"/>
+        <text class="titel" x="46" y="120">Open-Meteo</text>
+        <text class="zeile" x="46" y="138">Einstrahlung, Temp.</text></g>
+
+      <g class="knoten" id="k-awa"><rect x="32" y="176" width="170" height="56" rx="8"/>
+        <text class="titel" x="46" y="200">aWATTar</text>
+        <text class="zeile" x="46" y="218">Day-Ahead-Preis</text></g>
+
+      <g class="knoten" id="k-firms"><rect x="32" y="256" width="170" height="56" rx="8"/>
+        <text class="titel" x="46" y="280">NASA FIRMS</text>
+        <text class="zeile" x="46" y="298">aktive Feuer</text></g>
+
+      <g class="knoten" id="k-nord"><rect x="262" y="96" width="180" height="56" rx="8"/>
+        <text class="titel" x="276" y="120">Feld Nord</text>
+        <text class="zeile" x="276" y="138">18 MW · 2 WR · A/B</text></g>
+
+      <g class="knoten" id="k-ost"><rect x="262" y="176" width="180" height="56" rx="8"/>
+        <text class="titel" x="276" y="200">Feld Ost</text>
+        <text class="zeile" x="276" y="218">24 MW · 3 WR · A/B/C</text></g>
+
+      <g class="knoten" id="k-sued"><rect x="262" y="256" width="180" height="56" rx="8"/>
+        <text class="titel" x="276" y="280">Feld Süd</text>
+        <text class="zeile" x="276" y="298">12 MW · 2 WR · B/C</text></g>
+
+      <g class="knoten" id="k-norm"><rect x="512" y="96" width="180" height="56" rx="8"/>
+        <text class="titel" x="526" y="120">Normalisierung</text>
+        <text class="zeile" x="526" y="138">A/B/C → ein Format</text></g>
+
+      <g class="knoten" id="k-regel"><rect x="512" y="176" width="180" height="56" rx="8"/>
+        <text class="titel" x="526" y="200">Kreis-Regel</text>
+        <text class="zeile" x="526" y="218">Grenze 38,88 MW</text></g>
+
+      <g class="knoten" id="k-wacht"><rect x="512" y="256" width="180" height="56" rx="8"/>
+        <text class="titel" x="526" y="280">Wächter</text>
+        <text class="zeile" x="526" y="298">fail-closed</text></g>
+
+      <g class="knoten" id="k-spei"><rect x="752" y="96" width="170" height="88" rx="8"/>
+        <text class="titel" x="766" y="120">Speicher HQ</text>
+        <text class="zeile" x="766" y="138">20 MWh · 5 MW</text>
+        <rect class="soc-grund" x="766" y="150" width="142" height="8" rx="4"/>
+        <rect class="soc-fuell" x="766" y="150" width="142" height="8" rx="4"/>
+        <text class="zeile" x="766" y="174" id="soc-text">50 % · Ruhe</text></g>
+
+      <g class="knoten" id="k-na"><rect x="752" y="256" width="170" height="56" rx="8"/>
+        <text class="titel" x="766" y="280">Not-Aus</text>
+        <text class="zeile" x="766" y="298" id="na-text">bereit</text></g>
+
+      <!-- ── Event-Log ────────────────────────────────────────────────── -->
+      <rect class="log-rahmen" x="966" y="88" width="202" height="232" rx="8"/>
+      <g id="log">
+        <text class="log-zeile" x="980" y="116"><tspan class="art">abruf</tspan> · Open-Meteo</text>
+        <text class="log-zeile" x="980" y="150"><tspan class="art">messung</tspan> · 7 Geräte</text>
+        <text class="log-zeile" x="980" y="184"><tspan class="art">auffaelligkeit</tspan> · Grenze</text>
+        <text class="log-zeile" x="980" y="218"><tspan class="art">kommando</tspan> · laden</text>
+        <text class="log-zeile" x="980" y="252"><tspan class="art">kommando</tspan> · drosseln</text>
+        <text class="log-zeile" x="980" y="286"><tspan class="art">auffaelligkeit</tspan> · Feuer</text>
+      </g>
+
+      <!-- ── Summenband ───────────────────────────────────────────────── -->
+      <text class="gruppe-label" x="32" y="442">Summe des Kreises</text>
+      <rect class="band-grund" x="32" y="454" width="900" height="14" rx="7"/>
+      <rect class="band-fuell" x="32" y="454" width="900" height="14" rx="7"/>
+      <line class="band-grenze" id="grenze" x1="680" y1="446" x2="680" y2="476"/>
+      <text class="zeile" x="692" y="438" style="fill:var(--signal);font-family:var(--font-zahl);font-size:12px">38,88 MW Netzgrenze</text>
+      <text id="summe" x="960" y="468" style="fill:var(--text);font-family:var(--font-zahl);font-size:20px">32,0 MW</text>
+    </svg>
+  </div>
+
+  <!-- Kompaktfassung: unter 600 px trägt Text, was die Bühne nicht mehr
+       lesbar zeigen kann. Die vier Bahnarten bleiben unterscheidbar. -->
+  <div class="sk-hero__kompakt" aria-hidden="true">
+    <ol id="kompakt">
+      <li><span class="marke" style="background:var(--read)"></span><span><b>Lesen.</b> Drei echte Feeds kommen herein. Sieben Geräte melden in drei Formaten.</span></li>
+      <li><span class="marke" style="background:var(--read)"></span><span><b>Mittag.</b> Die Summe klettert von 32,0 auf 39,8 MW.</span></li>
+      <li><span class="marke" style="background:var(--rw)"></span><span><b>Grenze.</b> 38,88 MW sind erlaubt. Die Kreis-Regel schlägt an.</span></li>
+      <li><span class="marke" style="background:var(--write)"></span><span><b>Schreiben.</b> Der Wächter lässt ein Kommando durch: laden. Nicht drosseln.</span></li>
+      <li><span class="marke" style="background:var(--krit)"></span><span><b>Voll.</b> Erst jetzt wird gedrosselt. FIRMS meldet Feuer, der Not-Aus wartet auf Bestätigung.</span></li>
+      <li><span class="marke" style="background:var(--write)"></span><span><b>Log.</b> Jedes Kommando steht als Zeile drin. Nichts wird überschrieben.</span></li>
+    </ol>
+  </div>
+
+  <div class="sk-hero__unten">
+    <p class="sk-hero__bu" id="hero-bu">
+      Kein Dashboard, sondern das Nervensystem darunter: wer liest, wer schreibt,
+      und was der Wächter durchlässt.
+    </p>
+    <p class="sk-hero__takt" id="takt">Beat 1 von 6</p>
+  </div>
+
+  <p class="sr-only" id="hero-lang">
+    Schema in sechs Schritten. Erstens: Open-Meteo, aWATTar und NASA FIRMS liefern
+    echte Daten. Drei simulierte Parks melden über sieben Wechselrichter in den
+    Herstellerformaten A, B und C. Die Normalisierung macht daraus ein Format.
+    Zweitens: zur Mittagszeit steigt die Summe des Kreises von 32,0 auf 39,8 Megawatt.
+    Drittens: die Netzgrenze liegt bei 38,88 Megawatt, die Kreis-Regel schlägt an.
+    Viertens: der Wächter prüft und lässt ein einziges Kommando durch, den Speicher
+    zu laden. Gedrosselt wird noch nicht. Fünftens: der Speicher erreicht 95 Prozent,
+    seinen erlaubten Höchststand. Erst jetzt wird gedrosselt. Gleichzeitig meldet
+    FIRMS ein Feuer, der Not-Aus wartet auf eine Bestätigung und löst nicht von
+    selbst aus. Sechstens: jedes Kommando liegt als Zeile im Ereignisstrom, der nur
+    wächst und nie überschrieben wird.
+  </p>
+</section>
+
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const hero = document.getElementById("hero");
+  if (!hero) return;
+
+  /* Welche Bahnen und Knoten in welchem Beat sprechen. Ein Beat schaltet nur
+     Klassen — die Bewegung selbst macht CSS. */
+  const BEATS = [
+    { bahnen: ["p-om", "p-parks"],          knoten: ["k-om", "k-nord", "k-ost", "k-sued", "k-norm"], fuell: .593, soc: .5,  summe: "32,0 MW", na: "bereit" },
+    { bahnen: ["p-om", "p-parks", "p-awa"], knoten: ["k-norm", "k-awa"],                             fuell: .737, soc: .5,  summe: "39,8 MW", na: "bereit" },
+    { bahnen: ["p-awa", "p-rw"],            knoten: ["k-regel"],                                     fuell: .737, soc: .5,  summe: "39,8 MW", na: "bereit" },
+    { bahnen: ["p-rw", "p-lade"],           knoten: ["k-wacht", "k-spei"],                           fuell: .737, soc: .95, summe: "39,8 MW", na: "bereit" },
+    { bahnen: ["p-dros", "p-firms", "p-na"],knoten: ["k-sued", "k-firms", "k-na"],                   fuell: .719,soc: .95, summe: "38,8 MW", na: "Bestätigung nötig" },
+    { bahnen: ["p-log", "p-parks"],         knoten: ["k-wacht"],                                     fuell: .719,soc: .95, summe: "38,8 MW", na: "Bestätigung nötig" },
+  ];
+  const BEAT_MS = 3000;               // 6 × 3 s = 18 s Schleife
+
+  const bahnen  = [...hero.querySelectorAll(".bahn")];
+  const knoten  = [...hero.querySelectorAll(".knoten")];
+  const impulse = [...hero.querySelectorAll(".impuls")];
+  const zeilen  = [...hero.querySelectorAll(".log-zeile")];
+  const punkte  = [...hero.querySelectorAll("#kompakt li")];
+  const summe   = hero.querySelector("#summe");
+  const socText = hero.querySelector("#soc-text");
+  const naText  = hero.querySelector("#na-text");
+  const grenze  = hero.querySelector("#grenze");
+  const takt    = hero.querySelector("#takt");
+  const fuellBd = hero.querySelector(".band-fuell");
+  const fuellSoc= hero.querySelector(".soc-fuell");
+
+  /* Die Impulse holen ihre Bahn aus dem Pfad selbst. So kann die Geometrie
+     nicht zwischen Linie und Laufpunkt auseinanderlaufen. */
+  for (const i of impulse) {
+    const p = hero.querySelector("#" + i.dataset.bahn);
+    if (p) i.style.offsetPath = `path('${p.getAttribute("d")}')`;
+  }
+
+  const ruhe = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  function zeichne(n) {
+    const b = BEATS[n];
+    hero.dataset.beat = String(n + 1);
+    bahnen.forEach((el) => el.classList.toggle("an", b.bahnen.includes(el.id)));
+    knoten.forEach((el) => el.classList.toggle("an", b.knoten.includes(el.id)));
+    impulse.forEach((el) => el.classList.toggle("an", b.bahnen.includes(el.dataset.bahn)));
+    /* Das Log wächst nur — genau wie der Ereignisstrom im Modell. */
+    zeilen.forEach((el, i) => el.classList.toggle("an", i <= n));
+    punkte.forEach((el, i) => el.classList.toggle("an", i === n));
+    fuellBd.style.setProperty("--fuell", String(b.fuell));
+    fuellSoc.style.setProperty("--soc", String(b.soc));
+    summe.textContent = b.summe;
+    socText.textContent = b.soc >= .95 ? "95 % · voll" : "50 % · Ruhe";
+    naText.textContent = b.na;
+    grenze.classList.toggle("an", n === 2);
+    takt.textContent = `Beat ${n + 1} von 6`;
+  }
+
+  function ruhezustand() {
+    /* Alle sechs Beats gleichzeitig ablesbar, nichts bewegt sich. */
+    hero.dataset.beat = "ruhe";
+    bahnen.forEach((el) => el.classList.add("an"));
+    knoten.forEach((el) => el.classList.remove("an"));
+    impulse.forEach((el) => el.classList.remove("an"));
+    zeilen.forEach((el) => el.classList.add("an"));
+    punkte.forEach((el) => el.classList.add("an"));
+    fuellBd.style.setProperty("--fuell", ".997");
+    fuellSoc.style.setProperty("--soc", ".95");
+    summe.textContent = "38,8 MW";
+    socText.textContent = "95 % · voll";
+    naText.textContent = "Bestätigung nötig";
+    takt.textContent = "Alle sechs Schritte, ohne Bewegung";
+  }
+
+  let n = 0, timer = null;
+  const laeuft = () => timer !== null;
+  function start() {
+    if (laeuft() || ruhe.matches) return;
+    zeichne(n);
+    timer = setInterval(() => { n = (n + 1) % BEATS.length; zeichne(n); }, BEAT_MS);
+  }
+  function stop() { if (timer) { clearInterval(timer); timer = null; } }
+
+  function anwenden() {
+    if (ruhe.matches) { stop(); ruhezustand(); } else { zeichne(n); start(); }
+  }
+  ruhe.addEventListener("change", anwenden);
+
+  /* Nicht laufen, wenn niemand hinsieht. */
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stop(); else if (!ruhe.matches && sichtbar) start();
+  });
+  let sichtbar = true;
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver((eintraege) => {
+      sichtbar = eintraege[0].isIntersecting;
+      if (sichtbar && !document.hidden) anwenden(); else stop();
+    }, { threshold: .2 }).observe(hero);
+  }
+  anwenden();
+})();
+</script>
+</body>
+</html>
