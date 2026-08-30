@@ -1,0 +1,419 @@
+/*
+  waffle / components.css — v0, first real pass.
+
+  Distilled from patterns.html's quarry (lab.aisu.studio, fontane.studio,
+  AisuStudio/FullerHome, AisuStudio/spiritsprint). Requires tokens.css to be
+  loaded first — every rule here reads from the token layer, nothing is
+  hardcoded except where a component is deliberately theme-fixed (see the
+  "app shell" section below).
+
+  Naming: every class is prefixed `wf-` to stay collision-safe when dropped
+  into a project that already has its own `.card`/`.modal`/`.table` etc.
+
+  Expect additions here, not silent breaking renames — this is a first pass,
+  not a finished v1.
+*/
+
+/* ==========================================================
+   Buttons
+   ========================================================== */
+.wf-btn {
+  font-family: var(--font-primary);
+  font-weight: 500;
+  font-size: 12px;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-block;
+  transition: background var(--duration-fast) var(--ease-standard),
+              color var(--duration-fast) var(--ease-standard),
+              opacity var(--duration-fast) var(--ease-standard),
+              border-color var(--duration-fast) var(--ease-standard);
+}
+.wf-btn-ghost {
+  color: var(--color-text);
+  font-weight: 700;
+  text-transform: uppercase;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.wf-btn-ghost:hover { opacity: .75; }
+
+/* label is --color-on-accent-solid, not a fixed --color-vanilla: the fill
+   under it repoints, and vanilla only survives the light-mode grape (6.13:1),
+   dropping to 1.94:1 on the dark-mode accent. The token flips to ink there
+   (7.08:1). Not --color-on-accent either — that one is for lemon fills. */
+.wf-btn-primary {
+  background: var(--color-accent);
+  color: var(--color-on-accent-solid);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.wf-btn-primary:hover { opacity: .88; }
+
+.wf-btn-secondary {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-text);
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.wf-btn-secondary:hover { background: var(--color-surface); }
+
+/* deliberately fixed blueberry/vanilla — this is a toolbar strip meant to
+   sit on a dark canvas (editor chrome), not page content */
+.wf-btn-toolbar { display: inline-flex; gap: 6px; }
+.wf-btn-toolbar .wf-item {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--color-vanilla);
+  opacity: .7;
+  cursor: pointer;
+}
+.wf-btn-toolbar .wf-item.wf-active { background: var(--color-blueberry); opacity: 1; }
+
+/* ==========================================================
+   Tags · Badges · Chips
+   ========================================================== */
+.wf-tag-plain { font-family: var(--font-tertiary); font-size: 11px; color: var(--color-highlight); }
+
+.wf-tag-pill {
+  display: inline-block;
+  font-family: var(--font-tertiary);
+  font-size: 11px;
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+}
+
+.wf-badge-ribbon {
+  display: inline-block;
+  font-family: var(--font-tertiary);
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--color-highlight);
+  color: var(--color-on-accent);
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+}
+
+/* solid = fixed/important; pair with .wf-chip-dashed for "still open" */
+.wf-badge-accent {
+  display: inline-block;
+  font-family: var(--font-tertiary);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--color-on-accent);
+  background: var(--color-highlight);
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+}
+
+.wf-chip-dashed {
+  display: inline-block;
+  font-family: var(--font-tertiary);
+  font-size: 11px;
+  color: var(--color-muted);
+  background: var(--color-bg);
+  border: 1px dashed var(--color-hazelnut);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+/* --color-muted, not --color-hazelnut: this caption brings no fill of its own,
+   so it lands on whatever page surface it's dropped onto — and raw hazelnut is
+   a border/divider/disabled swatch, 2.6:1 on vanilla. --color-muted is the
+   darkened text-safe value (>=4.5:1) and repoints for dark mode. */
+.wf-meta-caption { font-family: var(--font-primary); font-size: 11px; color: var(--color-muted); }
+
+/* ==========================================================
+   Cards
+   ========================================================== */
+.wf-card-media { width: 100%; border-radius: var(--radius-sm); overflow: hidden; background: var(--color-surface); }
+.wf-card-media .wf-img { height: 60px; background: linear-gradient(135deg, var(--color-blueberry), var(--color-grape)); }
+.wf-card-media .wf-body { background: rgba(31,25,52,.85); color: var(--color-vanilla); padding: var(--sp-md); }
+.wf-card-media .wf-body h4 { font-family: var(--font-primary); font-size: 13px; margin: 0 0 4px; }
+.wf-card-media .wf-body .wf-tags { font-family: var(--font-tertiary); font-size: 10px; color: var(--color-highlight); }
+
+.wf-card-info {
+  border: 1px solid var(--color-hazelnut);
+  background: var(--color-bg);
+  padding: var(--sp-lg);
+}
+.wf-card-info h4 { font-size: 14px; font-weight: 700; margin: 0 0 4px; }
+.wf-card-info p { font-size: 12px; color: var(--color-muted); margin: 0; }
+
+.wf-card-step { background: var(--color-bg); border: 1px solid var(--color-surface); padding: var(--sp-md); }
+.wf-card-step .wf-idx { font-family: var(--font-tertiary); font-size: 11px; color: var(--color-accent); display: block; margin-bottom: 8px; }
+.wf-card-step h4 { font-size: 13px; font-weight: 700; margin: 0 0 6px; }
+
+/* built for a translucent-over-photo look (FullerHome's WebGL canvas
+   backdrop) — still works over a flat token background, just more subtle.
+   The veil is mixed from --color-surface-2 rather than a literal white: its
+   text is --color-text, which repoints, so a hardcoded white panel went
+   light-on-light in dark mode. Mixing off a token keeps the frosted effect
+   (still a step lighter than the page, still translucent over a photo) while
+   following the theme in both directions. */
+.wf-card-glass {
+  background: color-mix(in srgb, var(--color-surface-2) 72%, transparent);
+  border: 1px solid var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-lg);
+  box-shadow: var(--shadow-sm);
+}
+.wf-card-glass .wf-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--color-surface); font-size: 12px; }
+.wf-card-glass .wf-row:last-child { border-bottom: none; }
+.wf-card-glass .wf-row .wf-val { font-family: var(--font-tertiary); color: var(--color-text); }
+.wf-card-glass .wf-row.wf-total .wf-val {
+  background: var(--color-highlight);
+  color: var(--color-on-accent);
+  padding: 0 6px;
+  border-radius: var(--radius-xs);
+  font-weight: 700;
+}
+
+/* ==========================================================
+   Navigation
+   ========================================================== */
+/* both nav components below are fixed vanilla text — designed to sit on a dark
+   app-shell strip. .wf-nav-numbered's lemon counters are the tell: lemon on a
+   light surface is 1.06:1, it only reads on dark. */
+.wf-nav-text { display: flex; gap: var(--sp-lg); font-family: var(--font-primary); font-weight: 500; font-size: 12px; }
+.wf-nav-text a { color: var(--color-vanilla); text-decoration: none; opacity: .7; transition: opacity var(--duration-fast) var(--ease-standard); }
+.wf-nav-text a.wf-active, .wf-nav-text a:hover { opacity: 1; }
+.wf-nav-text a.wf-active { text-decoration: underline; }
+
+.wf-nav-numbered { display: flex; gap: var(--sp-md); font-family: var(--font-primary); font-weight: 500; font-size: 12px; }
+.wf-nav-numbered a { color: var(--color-vanilla); text-decoration: none; }
+.wf-nav-numbered .wf-num { color: var(--color-highlight); margin-right: 4px; }
+
+/* ==========================================================
+   Forms & Controls
+   ========================================================== */
+.wf-checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.wf-checkbox-row input { accent-color: var(--color-accent); width: 15px; height: 15px; }
+
+.wf-slider { width: 100%; accent-color: var(--color-accent); }
+
+.wf-tabs { display: inline-flex; border: 1px solid var(--color-hazelnut); border-radius: var(--radius-sm); overflow: hidden; }
+.wf-tabs .wf-item {
+  font-family: var(--font-primary);
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  padding: 8px 12px;
+  cursor: pointer;
+  background: var(--color-blueberry);
+  color: var(--color-vanilla);
+  opacity: .8;
+}
+.wf-tabs .wf-item.wf-active { background: var(--color-bg); color: var(--color-text); opacity: 1; }
+
+.wf-modal {
+  border: 1px solid var(--color-blueberry);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  padding: var(--sp-lg);
+  box-shadow: var(--shadow-lg);
+}
+.wf-modal h4 { font-size: 14px; margin: 0 0 8px; }
+.wf-modal p { font-size: 12px; color: var(--color-muted); margin: 0 0 12px; }
+
+/* ==========================================================
+   Data Display
+   ========================================================== */
+/* fixed vanilla — designed for a dark data strip, e.g. inside .wf-rail */
+.wf-kpi-row {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-tertiary); font-size: 12px;
+  padding: 8px 0; border-bottom: 1px solid var(--color-hazelnut);
+  color: var(--color-vanilla);
+}
+.wf-kpi-row .wf-val { color: var(--color-highlight); font-weight: 700; }
+
+.wf-progress { width: 100%; }
+.wf-progress .wf-track { height: 8px; background: var(--color-surface); border-radius: var(--radius-xs); overflow: hidden; }
+.wf-progress .wf-fill { height: 100%; background: var(--color-accent); }
+
+.wf-timeline { position: relative; padding-left: 20px; border-left: 2px solid var(--color-surface); }
+.wf-timeline .wf-item { position: relative; padding-bottom: 16px; font-size: 12px; }
+.wf-timeline .wf-item::before {
+  content: ""; position: absolute; left: -25px; top: 3px;
+  width: 8px; height: 8px; background: var(--color-accent); border-radius: 50%;
+}
+.wf-timeline .wf-item h5 { font-size: 12px; margin: 0 0 2px; }
+.wf-timeline .wf-item p { font-size: 11px; color: var(--color-muted); margin: 0; }
+
+/* ==========================================================
+   Layout
+   ========================================================== */
+.wf-eyebrow {
+  font-family: var(--font-tertiary); font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--color-accent); display: flex; align-items: center; gap: 8px;
+}
+.wf-eyebrow::before { content: ""; width: 18px; height: 1px; background: var(--color-accent); display: inline-block; }
+
+/* fixed dark/translucent regardless of page theme — a floating chrome bar,
+   not page content */
+.wf-sticky-header {
+  position: sticky; top: 0; z-index: 10;
+  width: 100%; background: rgba(31,25,52,.9); color: var(--color-vanilla);
+  padding: 10px 14px; font-family: var(--font-primary); font-size: 11px;
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ==========================================================
+   Glass Cards & Pill Buttons (FullerHome real app)
+   ========================================================== */
+.wf-pill-primary {
+  display: inline-block; padding: 12px 26px; border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-blueberry); background: var(--color-highlight);
+  color: var(--color-on-accent); font-family: var(--font-primary); font-size: 13px; font-weight: 700;
+}
+/* same translucent veil as .wf-card-glass, mixed off a token for the same
+   reason. These two were hardcoded white with pinned --color-blueberry text —
+   legible in dark mode, but a stark white pill on a dark page next to a glass
+   card that does follow the theme. Surface and label now repoint together. */
+.wf-pill-secondary {
+  display: inline-block; padding: 10px 22px; border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-text); background: color-mix(in srgb, var(--color-surface-2) 78%, transparent);
+  color: var(--color-text); font-family: var(--font-primary); font-size: 12px;
+}
+.wf-toggle-group { display: inline-flex; gap: 6px; }
+.wf-toggle {
+  padding: 8px 14px; border-radius: var(--radius-full); border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface-2) 78%, transparent); color: var(--color-text);
+  font-family: var(--font-primary); font-size: 11px; cursor: pointer;
+}
+/* the active state fills with lemon, which never repoints — so its label must
+   be pinned back to --color-on-accent rather than inheriting the repointing
+   --color-text above (that would be 1.06:1 on lemon in dark mode) */
+.wf-toggle.wf-active {
+  background: var(--color-highlight); color: var(--color-on-accent);
+  border-color: var(--color-text); font-weight: 700;
+}
+
+/* ==========================================================
+   Tables & Data Rows
+   ========================================================== */
+.wf-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.wf-table th {
+  font-family: var(--font-tertiary); font-size: 10px; text-transform: uppercase; letter-spacing: .05em;
+  text-align: left; color: var(--color-muted); padding: 6px 8px; border-bottom: 1px solid var(--color-hazelnut);
+}
+.wf-table td { padding: 8px; border-bottom: 1px solid var(--color-surface); }
+
+.wf-spec-list .wf-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--color-surface); font-size: 12px; }
+.wf-spec-list .wf-row:last-child { border-bottom: none; }
+.wf-spec-list .wf-row .wf-val { font-family: var(--font-tertiary); color: var(--color-text); font-variant-numeric: tabular-nums; }
+
+/* ==========================================================
+   App Shell (Spirit Sprint — sidebar, plot, board, roadmap, export card)
+   ========================================================== */
+/* fixed blueberry/vanilla — this is dark app chrome (a sidebar rail),
+   not page content, so it doesn't repoint with the page theme */
+.wf-rail { background: var(--color-blueberry); color: var(--color-vanilla); padding: var(--sp-md); border-radius: var(--radius-sm); font-family: var(--font-primary); }
+.wf-rail .wf-brand { font-family: var(--font-tertiary); font-weight: 700; font-size: 11px; text-transform: uppercase; margin-bottom: 10px; }
+.wf-rail .wf-brand span { color: var(--color-highlight); }
+.wf-rail .wf-step { display: block; padding: 5px 8px; border-radius: var(--radius-xs); font-size: 12px; color: rgba(234,232,224,.8); text-decoration: none; }
+.wf-rail .wf-step.wf-active { background: var(--color-highlight); color: var(--color-on-accent); font-weight: 700; }
+
+.wf-quad { position: relative; width: 100%; height: 110px; border: 1px solid var(--color-surface); border-radius: var(--radius-sm); background: var(--color-bg); }
+.wf-quad::before, .wf-quad::after { content: ""; position: absolute; background: var(--color-surface); }
+.wf-quad::before { left: 0; right: 0; top: 50%; height: 1px; }
+.wf-quad::after { top: 0; bottom: 0; left: 50%; width: 1px; }
+.wf-quad .wf-pin {
+  position: absolute; font-family: var(--font-tertiary); font-size: 9px;
+  background: var(--color-surface); color: var(--color-muted);
+  padding: 3px 7px; border-radius: var(--radius-full);
+  transform: translate(-50%, -50%); white-space: nowrap;
+}
+.wf-quad .wf-pin.wf-us { background: var(--color-highlight); color: var(--color-on-accent); font-weight: 700; }
+
+.wf-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.wf-board .wf-col h5 { font-family: var(--font-tertiary); font-size: 9px; text-transform: uppercase; color: var(--color-muted); text-align: center; margin: 0 0 6px; }
+.wf-board .wf-note { background: var(--color-surface); border-radius: var(--radius-xs); padding: 6px 8px; font-size: 10.5px; margin-bottom: 6px; }
+.wf-board .wf-note.wf-kept { background: var(--color-highlight); color: var(--color-on-accent); font-weight: 700; }
+
+.wf-roadmap { width: 100%; }
+.wf-roadmap .wf-line { height: 2px; background: var(--color-surface); margin: 0 16px 8px; position: relative; }
+.wf-roadmap .wf-years { display: flex; justify-content: space-between; }
+.wf-roadmap .wf-year { text-align: center; font-family: var(--font-tertiary); font-size: 10px; width: 40px; }
+.wf-roadmap .wf-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-hazelnut); margin: 0 auto 4px; }
+.wf-roadmap .wf-year.wf-now .wf-dot { background: var(--color-accent); width: 12px; height: 12px; }
+
+/* deliberately fixed blueberry/vanilla regardless of the page's own theme —
+   a "shareable artifact" card (export/result), not page chrome */
+.wf-export-card { background: var(--color-blueberry); color: var(--color-vanilla); border-radius: var(--radius-md); padding: var(--sp-lg); }
+.wf-export-card .wf-eyebrow { color: var(--color-lemon); font-family: var(--font-tertiary); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+.wf-export-card h4 { font-size: 15px; margin: 0 0 10px; }
+.wf-export-card .wf-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.12); font-size: 11px; }
+
+/* ==========================================================
+   Onboarding & Guidance
+   ========================================================== */
+/* fixed vanilla text — designed for a dark settings panel */
+.wf-collapsible { font-family: var(--font-primary); }
+.wf-collapsible .wf-head {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--font-tertiary); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--color-vanilla); cursor: pointer;
+}
+.wf-collapsible .wf-head + .wf-head { margin-top: 8px; }
+.wf-collapsible .wf-chev { color: var(--color-vanilla); opacity: .7; width: 10px; display: inline-block; }
+.wf-collapsible .wf-body { padding: 6px 0 4px 16px; font-size: 12px; color: rgba(234,232,224,.75); }
+.wf-collapsible .wf-head.wf-closed { opacity: .75; }
+
+.wf-coachmark { position: relative; width: 100%; height: 100%; min-height: 120px; }
+.wf-coachmark .wf-dim { position: absolute; inset: 0; background: rgba(0,0,0,.55); }
+.wf-coachmark .wf-spot { position: absolute; outline: 2px solid var(--color-highlight); background: var(--color-blueberry); border-radius: var(--radius-xs); }
+/* deliberately fixed vanilla/blueberry — the callout floats over the dimmed
+   overlay, so it stays a light card in both modes. Everything inside it must
+   therefore be pinned too: --color-muted on the step counter repointed to a
+   light grey and left it at 1.75:1 on this fixed vanilla panel in dark mode,
+   so it's a fixed ink-at-72% instead (5.8:1, same trick as .wf-rail .wf-step). */
+.wf-coachmark .wf-callout {
+  position: absolute; background: var(--color-vanilla); color: var(--color-blueberry);
+  border-radius: var(--radius-sm); padding: 8px 10px; box-shadow: var(--shadow-md);
+}
+.wf-coachmark .wf-callout .wf-step { font-family: var(--font-tertiary); font-size: 9px; color: rgba(31,25,52,.72); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+.wf-coachmark .wf-callout .wf-title { font-weight: 700; font-size: 11px; margin-bottom: 4px; }
+.wf-coachmark .wf-callout .wf-next {
+  display: inline-block; margin-top: 2px; border: 1px solid var(--color-blueberry);
+  border-radius: var(--radius-xs); padding: 2px 8px; font-family: var(--font-tertiary); font-size: 9px; cursor: pointer;
+}
+
+/* ==========================================================
+   Tooltips & Glossary
+   ========================================================== */
+/* inline glossary term for running text — e.g. witty's {{Begriff::Erklärung}}
+   markup, rendered by its inlineMd() helper. Dotted underline signals
+   "hover for more" without an extra icon glyph; tabindex + :focus/:focus-visible
+   make it keyboard-reachable, no JS required beyond whatever generates the
+   markup. The tip flips --color-text/--color-bg (text becomes the fill,
+   page bg becomes the label) so it reads as a floating chip in both themes,
+   without a third fixed color. */
+.wf-gloss { position: relative; border-bottom: 1px dotted var(--color-muted); cursor: help; }
+.wf-gloss .wf-gloss-tip {
+  visibility: hidden; opacity: 0; position: absolute; left: 0; bottom: calc(100% + 6px);
+  width: max-content; max-width: 260px; background: var(--color-text); color: var(--color-bg);
+  padding: .45em .65em; border-radius: var(--radius-sm); font-size: 12.5px; line-height: 1.4;
+  box-shadow: var(--shadow-md); z-index: 20;
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+.wf-gloss:hover .wf-gloss-tip,
+.wf-gloss:focus .wf-gloss-tip,
+.wf-gloss:focus-visible .wf-gloss-tip { visibility: visible; opacity: 1; }

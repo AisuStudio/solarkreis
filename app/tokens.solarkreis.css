@@ -1,0 +1,64 @@
+/*
+  SolarKreis — eigene Ebene ÜBER waffle. Hier steht nur, was waffle nicht
+  entscheiden kann: was in diesem Produkt read, write, r&w und kritisch heißt.
+  Keine neuen Farbwerte — alles zeigt auf waffle-Swatches.
+
+  waffle-Regel dazu: die Flavor-Rampen sind die TERTIÄRE Ebene und kodieren
+  Bedeutung im Inhalt. Chrome (Knöpfe, Links, Rahmen) bleibt blueberry /
+  grape / lemon. Genau eine Ausnahme ist unten dokumentiert.
+*/
+
+:root {
+  /* ── Linien, Punkte, Flächen. Volle Sättigung (Level 5), kein Text darauf.
+        Das sind die Farben aus dem Brief:
+        read #3e7c1f · write #ec6608 · r&w #e6187c · kritisch #d80b0b       */
+  --sk-read:  var(--color-pistachio-5);
+  --sk-write: var(--color-mango-5);
+  --sk-rw:    var(--color-raspberry-5);
+  --sk-crit:  var(--color-strawberry-5);
+
+  /* ── Chip-/Badge-Füllung mit Ink-Label. Level 2 quer über alle vier: das
+        ist waffles eigene Regel für eine kategoriale Reihe (ein Level über
+        die Flavors gelesen) und der einzige Level, auf dem alle vier mit
+        --color-blueberry AA für Fließtext klären. Nachgerechnet:
+        pistachio-2 9.44 · mango-2 10.93 · raspberry-2 7.76 · strawberry-2 6.63.
+        Level 5 klärt nur bei mango (5.19); pistachio 5 liegt bei 3.29,
+        raspberry 5 bei 3.84, strawberry 5 bei 3.19 — Großtext oder gar nichts.
+        Deshalb: blasse Füllung, Label in Ink, und der Punkt IM Chip trägt
+        die volle Sättigung von oben. So zeigt die Legende die echte Linien-
+        farbe, ohne dass die Schrift darauf leidet.                          */
+  --sk-read-fill:  var(--color-pistachio-2);
+  --sk-write-fill: var(--color-mango-2);
+  --sk-rw-fill:    var(--color-raspberry-2);
+  --sk-crit-fill:  var(--color-strawberry-2);
+  --sk-on-fill:    var(--color-blueberry);
+
+  /* ── Casing für Flusslinien auf dem Canvas.
+        WCAG 1.4.11 will 3:1 für bedeutungstragende Grafik gegen ihren Grund.
+        Gegen vanilla (#eae8e0) messen die vier: pistachio 4.17 · strawberry
+        4.31 · raspberry 3.58 · MANGO NUR 2.65. Die write-Linie fällt also
+        durch — und write ist die Linie, auf die es in diesem Produkt am
+        meisten ankommt. Statt den Farbwert aus dem Brief zu verbiegen,
+        bekommt jede Flusslinie eine dünne Ink-Fassung. Die Fassung trägt den
+        Kontrast gegen den Grund (13.73:1), der Farbton trägt weiter die
+        Bedeutung. Kartografischer Standard, keine Notlösung.                */
+  --sk-line-casing: var(--color-blueberry);
+  --sk-line-w:      3px;
+  --sk-line-casing-w: 5px;
+
+  /* ── Canvas-Grund. Eine Stufe heller als die Seite, damit das Feld als
+        Fläche liest, ohne eine fünfte Farbe einzuführen.                    */
+  --sk-canvas-bg:   var(--color-surface-2);
+  --sk-canvas-grid: var(--color-border);
+
+  /* ── Die dokumentierte Ausnahme von der Chrome-Regel:
+        Der Not-Aus ist ein Knopf, also Chrome — und trägt trotzdem
+        strawberry. Begründung: Farbe ist hier nicht Dekoration, sondern die
+        Bedeutung selbst; ein Not-Aus in grape wäre die schlechtere
+        Entscheidung. Auflage: strawberry-5 mit vanilla-Label misst 4.31:1,
+        das klärt AA nur als Großtext. Das Label ist deshalb auf >=19px bold
+        festgelegt, und Farbe ist nie das einzige Signal — der Knopf trägt
+        immer auch Wort und Bestätigungsdialog.                              */
+  --sk-estop-bg:    var(--color-strawberry-5);
+  --sk-estop-label: var(--color-vanilla);
+}
