@@ -173,3 +173,32 @@
   .sk-hero__kompakt li { color: var(--text); }
   .band-fuell, .soc-fuell { transition: none; }
 }
+
+/* ── Der Hero als Kopfbereich ──────────────────────────────────────────────
+   Auf der Introseite sitzt der Hero direkt unter der Navigation, nicht mehr
+   als gerahmte Insel im Textfluss. Zwei Dinge ändern sich dadurch.
+
+   Erstens die Rundung: ein Band, das die volle Breite nimmt, hat keine
+   Ecken, die man runden könnte.
+
+   Zweitens die Breite. Die Bühne hält ihr Seitenverhältnis (1214 × 584).
+   Liefe sie über die volle Fensterbreite, wäre der Hero auf einem
+   1600px-Schirm 770px hoch — ein Kopf, unter dem nichts mehr steht. Die
+   dunkle Fläche geht deshalb bis an den Rand, der Inhalt bleibt auf
+   Lesebreite. Das Band wirkt breit, die Zeichnung bleibt ruhig.        */
+
+.sk-hero--kopf { border-radius: 0; }
+
+.sk-hero--kopf > .sk-hero__stage,
+.sk-hero--kopf > .sk-hero__kompakt,
+.sk-hero--kopf > .sk-hero__unten {
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+/* Die Bildunterschrift ist Fließtext, kein Datenetikett — sie lag bei 13px
+   und damit unter der Lesegröße der übrigen Seite. Der Takt daneben bleibt
+   kleiner: er zählt, er wird nicht gelesen. */
+.sk-hero--kopf .sk-hero__bu   { font-size: var(--sk-fs-03); }
+.sk-hero--kopf .sk-hero__takt { font-size: var(--sk-fs-01); }
+.sk-hero--kopf .sk-hero__unten { padding: 0 var(--gutter) 24px; }

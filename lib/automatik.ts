@@ -26,7 +26,7 @@ import { ladder, projectStorage } from "./storage";
 import { append, simNow, store } from "./store";
 import { ausfuehren } from "./kommando";
 import { preisStand } from "./awattar";
-import { feuerStand } from "./firms";
+import { KRITISCH_FRP_MW, KRITISCH_KM, feuerStand } from "./firms";
 
 /** Schwellen der Leiter. Betreibergrößen, hier als Konstanten. */
 const LADEN_UNTER = 0;      // negativer Preis: einspeisen kostet
@@ -133,14 +133,31 @@ function feuerAlarm(ts: number): void {
   const schlimmster = f.relevant[0];
   if (!schlimmster) return;
 
+  /* Die Meldung muss sagen, ob zu handeln ist.
+
+     Vorher endete sie auf „Not-Aus wartet auf einen Menschen". Das ist eine
+     Aussage über die Bauweise und liest sich wie eine Aufforderung — Dom hat
+     beim Lesen gefragt, ob er etwas drücken soll und wo. Beim Hinweis lautet
+     die Antwort nein, und genau das stand nirgends.
+
+     Deshalb steht jetzt die Schwelle in der Meldung: ab wann kippt der
+     Hinweis in eine kritische Meldung. Eine Zahl, an der man die eigene
+     Lage misst, ist mehr wert als eine Aufforderung ohne Ziel. */
+  const kritisch = schlimmster.stufe === "kritisch";
+  const feld = PARKS.find((p) => p.id === schlimmster.park_id)?.name ?? schlimmster.park_id;
+
   alarm(ts, {
     type: "waldbrand",
-    severity: schlimmster.stufe === "kritisch" ? "kritisch" : "warnung",
+    severity: kritisch ? "kritisch" : "warnung",
     park_id: schlimmster.park_id,
     message:
       `${f.relevant.length} relevante Wärmedetektionen. Nächste ${schlimmster.abstand_km.toFixed(1)} km ` +
-      `von ${schlimmster.park_id} mit ${schlimmster.frp.toFixed(1)} MW` +
-      (schlimmster.demo ? " — DEMO-SZENARIO, kein echter Treffer." : ". Not-Aus wartet auf einen Menschen."),
+      `von ${feld} mit ${schlimmster.frp.toFixed(1)} MW` +
+      (schlimmster.demo
+        ? " — DEMO-SZENARIO, kein echter Treffer."
+        : kritisch
+          ? `. Kritisch: unter ${KRITISCH_KM} km und über ${KRITISCH_FRP_MW} MW. Das System schaltet nicht selbst — der Not-Aus für ${feld} liegt unter „Eingreifen".`
+          : `. Kein Handlungsbedarf: kritisch wird es erst unter ${KRITISCH_KM} km und über ${KRITISCH_FRP_MW} MW.`),
   });
 }
 

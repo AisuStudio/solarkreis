@@ -70,7 +70,12 @@ export function Schreibpfad({ z, nachKommando }: { z: Zustand; nachKommando: () 
           return (
             <div
               key={p.park.id}
+              id={`eingreifen-${p.park.id}`}
+              /* Sprungziel für den Alarmstreifen. scrollMarginTop hält die
+                 Karte unter der klebenden Navigation frei — ohne das landet
+                 sie beim Sprung genau darunter. */
               style={{
+                scrollMarginTop: 72,
                 background: "var(--sk-canvas-bg)",
                 border: "1px solid var(--color-muted)",
                 borderRadius: "var(--radius-md)",
@@ -231,14 +236,42 @@ function Mandant({ z }: { z: Zustand }) {
   );
 }
 
-/** Der Ereignisstrom, neueste oben. Er wächst nur. */
+/*
+  Der Ereignisstrom, neueste oben. Er wächst nur.
+
+  Deshalb sitzt er in einem eigenen Rahmen mit fester Höhe: vierzig Einträge
+  hätten die Seite sonst um mehrere Bildschirmhöhen verlängert, und alles
+  darunter wäre unerreichbar geworden. Das Log ist Beleg, kein Hauptinhalt —
+  es soll einsehbar sein, nicht die Seite bestimmen.
+
+  Ein scrollbarer Kasten braucht `tabIndex={0}`: sonst kommt niemand hinein,
+  der keine Maus benutzt. Mit role="region" und einem Namen taucht er
+  zusätzlich in der Landmarkenliste auf.
+*/
 function Log({ z }: { z: Zustand }) {
   return (
-    <div style={{ marginTop: 32 }}>
+    <div style={{ marginTop: 32, maxWidth: 900 }}>
       <div className="sk-mono-eyebrow" style={{ color: "var(--color-muted)" }}>
         Ereignisstrom · {z.eventCount} Einträge
       </div>
-      <ol style={{ listStyle: "none", padding: 0, margin: "10px 0 0", display: "grid", gap: 4, maxWidth: 900 }}>
+      <ol
+        tabIndex={0}
+        role="region"
+        aria-label={`Ereignisstrom, ${z.eventCount} Einträge, neueste oben`}
+        style={{
+          listStyle: "none",
+          padding: "4px 14px",
+          margin: "10px 0 0",
+          display: "grid",
+          gap: 4,
+          maxHeight: 340,
+          overflowY: "auto",
+          overscrollBehavior: "contain",
+          border: "1px solid var(--color-muted)",
+          borderRadius: "var(--radius-md)",
+          background: "var(--sk-canvas-bg)",
+        }}
+      >
         {z.log.length === 0 && (
           <li className="sk-text-kompakt" style={{ color: "var(--color-muted)" }}>
             Noch nichts passiert.
@@ -250,7 +283,13 @@ function Log({ z }: { z: Zustand }) {
             className="sk-mono-kompakt"
             style={{
               display: "grid",
-              gridTemplateColumns: "72px 110px 1fr",
+              /* In ch statt px: in einer dicktengleichen Schrift ist 1ch genau
+                 eine Zeichenbreite. Vorher standen hier 72px und 110px — bei
+                 13px Schrift ging das auf, bei 15px braucht „auffaelligkeit"
+                 aber 126px und lief in die Nachbarspalte. Mit ch wächst die
+                 Spalte mit der Schrift mit, und der Fehler kann nicht
+                 wiederkommen. 8 Zeichen Uhrzeit, 14 für die längste Art. */
+              gridTemplateColumns: "9ch 15ch 1fr",
               gap: 12,
               padding: "6px 0",
               borderBottom: "1px solid var(--color-surface)",

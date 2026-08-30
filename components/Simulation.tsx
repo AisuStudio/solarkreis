@@ -52,6 +52,20 @@ function Alarmstreifen({ z }: { z: Zustand }) {
       <span className="sk-text-kompakt">
         {z.alarme.length ? `${z.alarme[0].severity} · ${z.alarme[0].message}` : z.regel.grund}
       </span>
+      {/* Der Weg zum Schalter. Ein Alarm, der ein Feld nennt, muss sagen, wo
+          man für dieses Feld eingreift — sonst steht der Satz da und die
+          Frage „und wo?" bleibt offen. Der Verweis erscheint bei jedem Alarm
+          mit Feldbezug, nicht nur beim kritischen: er sagt „hier entlang",
+          nicht „handle jetzt". */}
+      {z.alarme[0]?.park_id && (
+        <a
+          className="sk-text-titel-klein"
+          href={`#eingreifen-${z.alarme[0].park_id}`}
+          style={{ color: "var(--sk-on-fill)" }}
+        >
+          Zum Feld unter „Eingreifen" →
+        </a>
+      )}
       {z.regel.gehandelt.length > 0 && (
         <span className="sk-mono-daten">{z.regel.gehandelt.join(" · ")}</span>
       )}

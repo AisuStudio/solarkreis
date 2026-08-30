@@ -150,6 +150,7 @@ export function Lageplan({ z }: { z: Zustand }) {
               key={q.id}
               q={q}
               aktiv={aktiv === q.id}
+              gedimmt={aktiv !== null && aktiv !== q.id}
               onAn={() => setAktiv(q.id)}
               onAus={() => setAktiv(null)}
               eyebrowDavor={q.fluss === "write" ? "Akteur" : undefined}
@@ -369,17 +370,31 @@ function Knoten({
 function QuellKarte({
   q,
   aktiv,
+  gedimmt,
   onAn,
   onAus,
   eyebrowDavor,
 }: {
   q: Quelle;
   aktiv: boolean;
+  gedimmt: boolean;
   onAn: () => void;
   onAus: () => void;
   eyebrowDavor?: string;
   nr: number;
 }) {
+  /* Zurücktreten, ohne unlesbar zu werden.
+
+     Gemessen auf dem Kartengrund rgb(242,241,235): Ink steht voll bei
+     14,88:1 und hält bis 65 % Deckkraft (5,02:1). Der Sekundärton cortado
+     steht bei 5,17:1 und fällt schon bei 85 % durch (3,80:1) — jede Stufe
+     Dimmen kostet ihn die Lesbarkeit.
+
+     Deshalb sind es zwei Griffe statt einem: die Karte geht auf 65 %, und
+     die Nebenzeilen wechseln dabei von cortado auf Ink. Das Ergebnis auf
+     dem Schirm ist ein weiches Grau bei 5,02:1 — die Karte tritt zurück,
+     der Text bleibt. Ein einzelner opacity-Griff hätte das nicht gekonnt. */
+  const nebenfarbe = gedimmt ? "var(--color-text)" : "var(--color-muted)";
   const chip =
     q.stand === "echt"
       ? { text: `echt · ${q.fluss}`, bg: q.fluss === "write" ? "var(--sk-write-fill)" : "var(--sk-read-fill)" }
@@ -406,13 +421,16 @@ function QuellKarte({
           width: "100%",
           textAlign: "left",
           background: "var(--sk-canvas-bg)",
-          /* Zustand im Rahmen, nicht in der Deckkraft: gedimmter Kartentext
-             fällt bei jeder Stufe durch (cortado schon bei 70 % nur 2,74:1). */
+          /* Der ausgewählte Zustand steht weiterhin im Rahmen, nicht in der
+             Deckkraft — ein Rahmen ist eindeutig, eine Helligkeit nicht. Die
+             Deckkraft trägt die andere Aussage: „nicht dieser hier". */
           border: aktiv ? "2px solid var(--color-text)" : "1px solid var(--color-muted)",
           padding: aktiv ? 11 : 12,
           borderRadius: "var(--radius-md)",
           cursor: "pointer",
           font: "inherit",
+          opacity: gedimmt ? 0.65 : 1,
+          transition: "opacity .18s ease",
         }}
       >
         <span
@@ -430,11 +448,11 @@ function QuellKarte({
         <span className="sk-text-titel" style={{ display: "block", marginTop: 8, color: "var(--color-text)" }}>
           {q.name}
         </span>
-        <span className="sk-text-label" style={{ display: "block", color: "var(--color-muted)" }}>
+        <span className="sk-text-label" style={{ display: "block", color: nebenfarbe }}>
           {q.zeile}
         </span>
         {q.hinweis && (
-          <span className="sk-text-label" style={{ display: "block", color: "var(--color-muted)", marginTop: 2 }}>
+          <span className="sk-text-label" style={{ display: "block", color: nebenfarbe, marginTop: 2 }}>
             {q.hinweis}
           </span>
         )}
