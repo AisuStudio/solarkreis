@@ -1,23 +1,41 @@
 # SolarKreis
 
-Ein interaktives 2D-Dashboard für ein simuliertes Netz aus drei Solarparks, gespeist
-mit echten externen Daten. Es zeigt ein Produktmuster: einen read-only-Monitoring-
+Ein interaktives 2D-Dashboard für ein simuliertes Netz aus drei Solarparks, das mit
+echten externen Daten gespeist werden soll. Es zeigt ein Produktmuster: einen read-only-Monitoring-
 Prototyp in ein System mit sicherem Schreibzugriff und automatisierten Abläufen
 überführen, mit Daten aus mehreren Geräteformaten in einem Modell vereinheitlicht.
 
 Zwei Bereiche: **Simulation** und **Dokumentation**.
 
-**Echt sind** Wetter (Open-Meteo), Strompreis (aWATTar) und aktive Feuer (NASA FIRMS).
-**Simuliert sind** Parks, Geräte und Messwerte — letztere abgeleitet aus der echten
+> **Wo das Stück gerade wirklich steht.** Vorgesehen sind drei echte Quellen: Wetter
+> (Open-Meteo), Strompreis (aWATTar), aktive Feuer (NASA FIRMS). **Angeschlossen ist
+> bislang keine davon.** Im Code steht kein einziger Netzaufruf; gerechnet wird auf
+> einem deterministischen Rückfall aus Solargeometrie und Temperaturmodell. Die
+> Oberfläche schreibt an jede betroffene Stelle „simuliert" — sie behauptet nichts,
+> was der Code nicht tut. Diese Zeile verschwindet, wenn die Schritte 3, 5 und 8 stehen.
+
+**Simuliert sind** Parks, Geräte und Messwerte — letztere abgeleitet aus der
 Einstrahlung plus Rauschen. Die Oberfläche kennzeichnet das an jeder Stelle.
 
 ## Stand
 
-Schritt 2 von 10 der Build-Reihenfolge.
+Zwei von zehn Schritten abgeschlossen, drei angefangen.
 
-1. ✓ Gerüst + waffle-Tokens — Kontrollseite `/ds`
-2. ✓ Datenmodell, Event-Store, Simulation — Kontrolle über `/api/state`
-3. … Open-Meteo end-to-end
+| | Schritt | |
+|---|---|---|
+| 1 | Gerüst + waffle-Tokens | ✓ Kontrollseite `/ds`, dazu die Typo-Ebene mit neun Stufen und zwanzig Stilen |
+| 2 | Datenmodell, Event-Store, Simulation | ✓ Kontrolle über `/api/state` |
+| 3 | Open-Meteo | ○ |
+| 4 | Geräteformate → Normalisierung → Übersicht | ◐ Logik fertig, Oberfläche als erste Fassung unter `/simulation` |
+| 5 | aWATTar + Statusleiste | ○ Leiste steht, Preis und Ertrag bleiben absichtlich leer |
+| 6 | Schreibpfad fail-closed | ◐ `storageGuard()` gebaut, aus dem Produkt noch nicht aufgerufen |
+| 7 | Kreis-Regel + Alerts | ◐ `ladder()` gebaut und geprüft, bisher nur über `/api/storage` |
+| 8 | NASA FIRMS | ○ Schlüssel liegt vor, Code nicht |
+| 9 | Datenquellen-Seite | ○ |
+| 10 | Dokumentationsseite | ○ Entwurf steht in Figma, `/doku` ist noch 404 |
+
+Außerhalb der Reihenfolge: `lib/glare.ts` als Beleg für eine Absage (siehe unten),
+und ein Hero-Prototyp als eine Datei unter `public/hero.html`.
 
 Feld Süd liegt seit der Autobahn-Frage an einer realen Ackerfläche bei Deutsch
 Bork, 221 m von der A9 — innerhalb des 500-m-Korridors, den das EEG für
