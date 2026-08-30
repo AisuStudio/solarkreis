@@ -9,7 +9,7 @@
   wirklich stehen. Wo etwas simuliert ist, sagt die Oberfläche es.
 */
 
-import type { Device, Operator, Park } from "./model";
+import type { Device, Operator, Park, Storage } from "./model";
 
 /** Die Zentrale. Kein Park — der Knoten in der Mitte des Kreises. */
 export const HQ = {
@@ -106,3 +106,38 @@ export const TOTAL_CAPACITY_KW = PARKS.reduce((s, p) => s + p.capacity_kw, 0);
  * Regel nie zu sehen — an einem klaren Junimittag liegt der Kreis darüber.
  */
 export const GRID_LIMIT_KW = Math.round(TOTAL_CAPACITY_KW * 0.72);
+
+/*
+  Der Speicher. Steht am HQ, nicht in einem Park — damit wird das HQ vom
+  Beschriftungspunkt zum handelnden Actor.
+
+  Zur Chemie: Eisen-Redox-Flow, kein Lithium, wässriger und nicht brennbarer
+  Elektrolyt. Bewusst NICHT Eisen-Luft ("Rostbatterie"): die ist eine
+  100-Stunden-Technologie für mehrtägige Überbrückung, mit absichtlich
+  niedrigem Leistungs-zu-Energie-Verhältnis und rund 50 % Wirkungsgrad. Für
+  einen Tageszyklus ist sie das falsche Werkzeug. Gerechnet an 30 Tagen echter
+  Spotpreise (31.07.–30.08.2026, Median-Tagesspanne 181 €/MWh) bringt dieselbe
+  Anlage bei 80 % rund 2.290 €/Tag und war an 29 von 29 Tagen im Plus, bei 50 %
+  rund 1.115 €/Tag und an 24 von 29.
+
+  Ungefährlich heißt hier: kein thermisches Durchgehen, keine kritischen
+  Rohstoffe. Nicht: harmlos. Der Elektrolyt ist ätzend. Die Oberfläche schreibt
+  das so, statt "keine Gefahr für die Umwelt" zu behaupten.
+
+  Größe: 20 MWh bei 5 MW, also vier Stunden. Rund 9 % der Spitzenleistung des
+  Kreises — genug, um die Kreis-Regel zu einer Leiter zu machen, zu klein, um
+  Abregelung ganz zu ersetzen. Das ist Absicht: sonst wäre die Drosselung nie
+  zu sehen.
+*/
+export const STORAGE: Storage = {
+  id: "hq-speicher",
+  name: "Speicher HQ",
+  operator_id: "op-kreis",
+  chemistry: "Eisen-Redox-Flow (simuliert)",
+  capacity_kwh: 20_000,
+  power_kw: 5_000,
+  round_trip_efficiency: 0.8,
+  reserve_soc: 0.1,
+  max_soc: 0.95,
+  initial_soc: 0.5,
+};

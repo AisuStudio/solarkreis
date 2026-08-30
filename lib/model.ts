@@ -85,6 +85,48 @@ export interface MarketPrice {
   price_eur_mwh: number;
 }
 
+/* ── Speicher ───────────────────────────────────────────────────────────── */
+
+/**
+ * Ein Batteriespeicher am HQ. Er ist der einzige Actor im System, dessen
+ * Schreibzugriff etwas HERSTELLT statt etwas einzuschränken — alle anderen
+ * Kommandos drosseln, schalten ab oder drehen weg. Deshalb steht er hier und
+ * nicht als vierter Park.
+ */
+export interface Storage {
+  id: string;
+  name: string;
+  operator_id: OperatorId;
+  /** Zellchemie. Simuliert, aber mit den Kennwerten der echten Technologie. */
+  chemistry: string;
+  capacity_kwh: number;
+  /** Maximale Lade- und Entladeleistung. */
+  power_kw: number;
+  /** Zyklus-Wirkungsgrad, 0..1. Aufgeteilt als Wurzel auf beide Richtungen. */
+  round_trip_efficiency: number;
+  /** Unter diesen Ladestand wird nie entladen. */
+  reserve_soc: number;
+  /** Über diesen Ladestand wird nie geladen. */
+  max_soc: number;
+  /** Ladestand beim Start des Ereignisstroms. */
+  initial_soc: number;
+}
+
+/** Was der Speicher gerade tut. */
+export type StorageMode = "laden" | "entladen" | "ruhe";
+
+export interface StorageState {
+  mode: StorageMode;
+  /** Ladestand 0..1. */
+  soc: number;
+  /** Aktuelle Leistung am Netzanschluss, kW. Positiv = bezieht, negativ = gibt ab. */
+  grid_kw: number;
+  /** Nutzbare Energie über der Reserve, kWh. */
+  available_kwh: number;
+  /** Aufnahmefähigkeit bis max_soc, kWh. */
+  headroom_kwh: number;
+}
+
 /* ── Auffälligkeiten ────────────────────────────────────────────────────── */
 
 export type AlertType =
@@ -93,6 +135,7 @@ export type AlertType =
   | "ueberlast"
   | "waldbrand"
   | "blendung"
+  | "speicher_grenze"
   | "daten_veraltet";
 
 export type Severity = "hinweis" | "warnung" | "kritisch";
@@ -116,7 +159,10 @@ export type CommandAction =
   | "not_aus"
   /** Module aus der Blendrichtung drehen. Kein Abschalten — die Leistung sinkt nur. */
   | "schutzstellung"
-  | "freigeben";
+  | "freigeben"
+  | "speicher_laden"
+  | "speicher_entladen"
+  | "speicher_ruhe";
 
 /**
  * Das Ergebnis des Wächters. fail-closed heißt: alles außer "autorisiert"
@@ -131,8 +177,10 @@ export type CommandStatus = "angefordert" | "ausgefuehrt" | "abgelehnt";
 
 export interface Command {
   id: string;
-  park_id: string;
+  /** null bei Kommandos, die keinen Park betreffen — etwa am Speicher. */
+  park_id: string | null;
   device_id: string | null;
+  storage_id: string | null;
   action: CommandAction;
   /** Zielwert bei setpoint_setzen, 0..1. Sonst null. */
   value: number | null;

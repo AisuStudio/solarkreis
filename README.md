@@ -61,6 +61,46 @@ Bewusste Grenze von v1: bei einem Kaltstart auf Vercel ist das Log leer.
 Kommandos überleben keinen Instanz-Neustart. Der Weg nach draußen wäre Supabase
 mit derselben append-only-Tabelle.
 
+### Speicher am HQ
+
+Ein Batteriespeicher, 20 MWh bei 5 MW, am HQ statt in einem Park — damit wird
+das HQ vom Beschriftungspunkt zum handelnden Actor. Er kostet **keine neue
+Datenquelle**: er lebt von aWATTar, das ohnehin im Set ist.
+
+Er ist aus drei Gründen drin, und nur der erste ist offensichtlich:
+
+1. **Er ist der fehlende Schreib-Actor.** Jeder andere Schreibzugriff im System
+   schränkt ein — drosseln, Not-Aus, Schutzstellung. Das Vokabular des
+   „sicheren Schreibzugriffs" war damit rein defensiv. Der Speicher gibt dem
+   Schreibpfad eine Handlung, die etwas herstellt.
+2. **Er macht die Kreis-Regel zur Leiter.** Vorher: über der Netzgrenze oder
+   Preis negativ → schwächsten Park drosseln, also Energie wegwerfen. Jetzt:
+   erst einlagern, drosseln erst wenn nichts mehr hineinpasst. Abregelung ist
+   das letzte Mittel statt der ersten Reaktion. Der Speicher ist bewusst zu
+   klein, um Abregelung zu ersetzen — sonst wäre sie nie zu sehen.
+3. **Der Ladestand belegt, dass das Event-Log trägt.** Ein Sollwert ist „letztes
+   Kommando gewinnt"; den bekommt man auch ohne Ereignisstrom. Ein Ladestand ist
+   eine Akkumulation über den gesamten Strom *und* über die Zeit zwischen den
+   Kommandos. Man kann ihn nicht aus dem letzten Ereignis ablesen.
+
+**Chemie: Eisen-Redox-Flow, nicht Eisen-Luft.** Die „Rostbatterie" ist eine
+100-Stunden-Technologie für mehrtägige Überbrückung, mit absichtlich niedrigem
+Leistungs-zu-Energie-Verhältnis und rund 50 % Zykluswirkungsgrad — für einen
+Tageszyklus das falsche Werkzeug. Gerechnet an 30 Tagen echter Spotpreise
+(31.07.–30.08.2026, 719 Stunden, Median-Tagesspanne 181 €/MWh) bringt dieselbe
+Anlage bei 80 % rund 2.290 €/Tag und war an 29 von 29 Tagen im Plus; bei 50 %
+rund 1.115 €/Tag und an 24 von 29. Die deutsche Preisspanne trägt also beide —
+der Einwand gegen Eisen-Luft ist die Bauform, nicht die Wirtschaftlichkeit.
+
+Und die Kennzeichnung bleibt genau: kein thermisches Durchgehen, keine
+kritischen Rohstoffe. Nicht „ungefährlich" — der Elektrolyt ist ätzend.
+
+Der Wächter ist hier am einleuchtendsten: **Preisdaten älter als 15 Minuten →
+nicht handeln, Ruhestellung.** Ruhe ist der sichere Zustand, weil Nichtstun die
+einzige Handlung ist, die ohne verlässlichen Preis nachweislich keinen Schaden
+anrichtet. Belegt unter `/api/storage`, samt Prüflauf der Faltung gegen einen
+erfundenen Ereignisstrom (4 h laden → 2 h ruhen → entladen, Zyklus misst 80 %).
+
 ### Normalisierung
 
 Der Kernbeleg. Die drei Formate aus dem Brief werden am **Ingest** vereinheitlicht,
