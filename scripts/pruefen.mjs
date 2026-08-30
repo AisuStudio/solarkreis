@@ -87,6 +87,20 @@ p(z.parks.every((x) => x.weather.source.origin === "echt"), "Open-Meteo antworte
 p(z.preis.source?.origin === "echt" && z.preis.reihe.length > 0, `aWATTar antwortet (${z.preis.reihe.length} Stundenpreise)`);
 p(z.feuer.source.origin === "echt" && z.feuer.fehler === null, `NASA FIRMS antwortet (${z.feuer.hotspots.length} Detektionen)`);
 
+/* ── Herkunft muss dem Ergebnis folgen, nicht der Absicht ──────────────
+   Der Fehler, der das nötig gemacht hat: auf Vercel fehlte der
+   FIRMS-Schlüssel, der Abruf lief ins Leere — und die Quellkarte zeigte
+   trotzdem "ECHT". Ein Zustand, der einen Fehler trägt, darf nicht
+   gleichzeitig "echt" heißen. */
+p(!(z.feuer.fehler && z.feuer.hotspots.length === 0) || z.feuer.source.origin === "simuliert",
+  `Feuer: Fehlerzustand und Herkunft passen zusammen (Fehler: ${z.feuer.fehler ?? "keiner"}, Herkunft: ${z.feuer.source.origin})`);
+for (const park of z.parks) {
+  p(park.weather.source.origin !== "echt" || park.weather.source.fetchedAt !== null,
+    `${park.park.name}: "echt" trägt einen Abrufzeitpunkt`);
+}
+p(z.preis.source?.origin !== "echt" || z.preis.reihe.length > 0,
+  "Preis: \"echt\" nur mit tatsächlich gelieferten Stundenpreisen");
+
 /* ── Alarme sind gefiltert, nicht roh ─────────────────────────────────── */
 p(z.feuer.relevant.length <= z.feuer.imUmkreis.length,
   `Feuer: ${z.feuer.relevant.length} relevant von ${z.feuer.imUmkreis.length} im Umkreis (${z.feuer.hotspots.length} roh)`);

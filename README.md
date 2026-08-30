@@ -34,7 +34,16 @@ Alle zehn Schritte abgeschlossen. Was danach offen bleibt, steht unten.
 | 9 | Datenquellen-Seite | ✓ `/datenquellen` |
 | 10 | Dokumentationsseite | ✓ `/doku`, an mehreren Stellen gegen die Messung nachgezogen |
 
-**Noch offen:** kein Deploy (braucht einen Vercel-Account) · die Simulation läuft auf
+**Live:** [solarkreis.vercel.app](https://solarkreis.vercel.app)
+
+> **Auf der Live-Instanz fehlt der FIRMS-Schlüssel.** `FIRMS_MAP_KEY` liegt lokal in
+> `.env.local` und ist absichtlich nicht im Repo. Ohne ihn meldet die Feuer-Quelle
+> „antwortet nicht" und zeigt sich als simuliert — Wetter und Preis laufen, die brauchen
+> keinen Schlüssel. Zum Setzen: Vercel → Project → Settings → Environment Variables,
+> Name `FIRMS_MAP_KEY`, danach neu deployen. Einen eigenen Schlüssel gibt es kostenlos
+> bei [firms.modaps.eosdis.nasa.gov/api/map_key](https://firms.modaps.eosdis.nasa.gov/api/map_key/).
+
+**Noch offen:** die Simulation läuft auf
 einem Speicher-Store, nach einem Kaltstart ist das Log leer · echtes Auth statt des
 Operator-Stubs.
 

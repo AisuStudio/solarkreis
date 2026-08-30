@@ -112,6 +112,18 @@ const DEMO: Source = {
   fetchedAt: null,
 };
 
+/* Ein Abruf, der fehlgeschlagen ist, ist NICHT „echt". Das klingt
+   selbstverständlich, war es aber nicht: auf Vercel fehlte der Schlüssel,
+   der Abruf lief ins Leere — und die Quellkarte zeigte trotzdem
+   „ECHT · READ", weil der Zustand zwar einen Fehler trug, die Herkunft aber
+   nicht. Genau die Sorte Behauptung, gegen die dieses Stück argumentiert.
+   Die Herkunft folgt jetzt dem Ergebnis, nicht der Absicht. */
+const GESCHEITERT = (grund: string): Source => ({
+  origin: "simuliert",
+  label: `FIRMS antwortet nicht: ${grund}`,
+  fetchedAt: null,
+});
+
 /** Rechteck um alle drei Felder plus Umkreis. Ein Rechteck statt drei
  *  Abfragen: die API rechnet nach Fläche, drei Kreise wären drei Aufrufe. */
 function rechteck(): string {
@@ -179,6 +191,12 @@ export async function refreshFeuer(ts: number): Promise<void> {
   if (alt && jetzt - alt.fetchedAt < frist) return;
 
   if (!key) {
+    /* Nicht stumm: ohne diesen Eintrag sieht man auf der Datenquellen-Seite
+       nur „0 Detektionen" — und das heißt etwas anderes als „wir haben nie
+       gefragt". */
+    if (!alt || alt.fehler !== "FIRMS_MAP_KEY fehlt") {
+      append({ kind: "abruf", ts, source: GESCHEITERT("FIRMS_MAP_KEY fehlt"), note: "Kein Abruf möglich." });
+    }
     globalRef.__solarkreisFirms = { hotspots: [], fetchedAt: jetzt, fehler: "FIRMS_MAP_KEY fehlt" };
     return;
   }
@@ -210,7 +228,7 @@ export async function refreshFeuer(ts: number): Promise<void> {
   append({
     kind: "abruf",
     ts,
-    source: fehler && alle.length === 0 ? { ...ECHT(jetzt), origin: "simuliert", label: `FIRMS nicht erreichbar: ${fehler}` } : ECHT(jetzt),
+    source: fehler && alle.length === 0 ? GESCHEITERT(fehler) : ECHT(jetzt),
     note: `${alle.length} Detektionen im Rechteck ${box}, davon ${alle.filter((h) => h.abstand_km <= UMKREIS_KM).length} im ${UMKREIS_KM}-km-Umkreis`,
   });
 }
@@ -267,7 +285,13 @@ export function feuerStand(): FeuerStand {
       hinweis_frp: HINWEIS_FRP_MW, hinweis_km: HINWEIS_KM,
       kritisch_frp: KRITISCH_FRP_MW, kritisch_km: KRITISCH_KM,
     },
-    source: demoAn ? DEMO : s ? ECHT(s.fetchedAt) : { origin: "simuliert", label: "noch nicht abgerufen", fetchedAt: null },
+    source: demoAn
+      ? DEMO
+      : !s
+        ? { origin: "simuliert", label: "noch nicht abgerufen", fetchedAt: null }
+        : s.fehler && s.hotspots.length === 0
+          ? GESCHEITERT(s.fehler)
+          : ECHT(s.fetchedAt),
     demoAn,
     fehler: s?.fehler ?? null,
     umkreis_km: UMKREIS_KM,
