@@ -75,3 +75,43 @@ Reflexionsgrad des Glases, Augenhöhe, Sichtachsen und Bewuchs. Hier steht eine
 geometrische Näherung mit einer Modulausrichtung. Sie taugt, um zu zeigen, dass
 der Fall an diesem Ort nicht eintritt — nicht, um eine Genehmigungsfrage zu
 beantworten.
+
+## Mehrtagesspeicher als Blackout-Rückfall
+
+**Idee.** Neben dem Arbitrage-Speicher ein zweiter, der einen Netzausfall
+überbrückt. Vorgeschlagene Technik: Eisen-Luft („Rostbatterie").
+
+**Die Technik wäre richtig gewählt.** Was Eisen-Luft für den Tageszyklus
+disqualifiziert, qualifiziert sie hier: rund 100 Stunden Dauer, absichtlich
+niedriges Leistungs-zu-Energie-Verhältnis, niedrige Kosten je kWh. Der
+Zykluswirkungsgrad von rund 50 % fällt bei einem Notfall-Asset kaum ins
+Gewicht, weil es kaum zyklisiert wird — bezahlt wird Vorhaltung, nicht
+Umschlag. Das ist das exakte Gegenprofil zum Speicher am HQ, und es ist die
+saubere Aufteilung: ein Speicher, der verdient, und einer, der überbrückt. Ein
+einzelner, der beides halb kann, wäre die schlechtere Anlage.
+
+**Grund dagegen: SolarKreis kennt keine Verbraucher.** Das Modell führt Park,
+Device, Reading, MarketPrice, Storage, Alert, Command und Operator. Alles
+fließt nach außen — Felder zum HQ, HQ ins Netz. Es gibt nichts, wofür ein
+Notfallspeicher einspringen könnte.
+
+Ihn einzubauen hieße nicht, ein Merkmal zu ergänzen, sondern eine neue
+Dimension zu erfinden: Verbrauch, Inselnetzgrenze, Vorrangregeln bei knapper
+Energie. Das ist ein zweites Produkt neben dem, das hier gebaut wird. Der Kern
+dieses Stücks ist der Weg von read-only zu sicherem Schreibzugriff, nicht
+Versorgungssicherheit — beides sind gute Themen, aber nicht dasselbe.
+
+**Auch die billige Variante kommt nicht.** Der Speicher am HQ hält bereits eine
+Reserve von 10 %, unter die nie entladen wird. Sie ließe sich zur Inselreserve
+umwidmen, die bei Netzausfall Steuerung und Kommunikation des HQ trägt — das
+hätte keine einzige neue Entität gekostet und die Frage im Modell beantwortet
+statt nur in der Dokumentation.
+
+Dagegen spricht, dass es eine Behauptung aufstellt, die das Modell nicht
+stützt. Ohne Lastmodell ist „trägt die Steuerung so und so viele Stunden" eine
+Zahl ohne Bezugsgröße; sie klänge belastbar und wäre geraten. Die Reserve
+bleibt deshalb, was sie ist: Tiefentladeschutz. Ein kleiner belegbarer Grund
+ist besser als ein großer erfundener.
+
+**Reihenfolge für eine v2.** Erst ein Lastmodell, dann der Speicher. Andersherum
+entsteht ein Notfall-Asset ohne Notfall.
