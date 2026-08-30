@@ -11,6 +11,7 @@
 */
 
 import { useEffect, useState } from "react";
+import { useKommando } from "./useKommando";
 import type { Zustand } from "@/lib/zustand";
 import { StatusBar } from "./StatusBar";
 import { Lageplan } from "./Lageplan";
@@ -98,6 +99,12 @@ export function Simulation({ initial }: { initial: Zustand }) {
      dabei nicht. */
   const [feldAktiv, setFeldAktiv] = useState<string | null>(null);
 
+  /* Ein Weg zum Wächter, zwei Bedienorte: die Schaltwarte über der Feldkarte
+     im Lageplan und der Abschnitt „Eingreifen" darunter. */
+  const { senden, laeuft, antwort } = useKommando(z.operatorId, () =>
+    setAnstoss((n) => n + 1),
+  );
+
   useEffect(() => {
     let lebt = true;
     const hol = async () => {
@@ -148,13 +155,21 @@ export function Simulation({ initial }: { initial: Zustand }) {
         </div>
       )}
         <Alarmstreifen z={z} />
-        <Lageplan z={z} feldAktiv={feldAktiv} onFeld={setFeldAktiv} />
+        <Lageplan
+          z={z}
+          feldAktiv={feldAktiv}
+          onFeld={setFeldAktiv}
+          senden={senden}
+          laeuft={laeuft}
+        />
       </div>
       <Schreibpfad
         z={z}
-        nachKommando={() => setAnstoss((n) => n + 1)}
         feldAktiv={feldAktiv}
         onFeld={setFeldAktiv}
+        senden={senden}
+        laeuft={laeuft}
+        antwort={antwort}
       />
     </>
   );

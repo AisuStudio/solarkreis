@@ -39,6 +39,17 @@ function versatzKm(lat: number, lon: number) {
   };
 }
 
+/* Dieselben vier Stufen wie in „Eingreifen". Sie stehen dort schon einmal;
+   ein Import quer zwischen zwei Bedienoberflächen wäre die schlechtere
+   Kopplung als zwei kurze Listen mit demselben Inhalt. Falls daraus je drei
+   Listen werden, gehören sie nach lib/. */
+const STUFEN: [number, string][] = [
+  [1, "100 %"],
+  [0.75, "75 %"],
+  [0.5, "50 %"],
+  [0, "0 %"],
+];
+
 const BREITE = 1120;
 const HOEHE = 720;
 const MITTE = { x: 545, y: 300 };
@@ -71,12 +82,19 @@ export function Lageplan({
   z,
   feldAktiv,
   onFeld,
+  senden,
+  laeuft,
 }: {
   z: Zustand;
   feldAktiv: string | null;
   onFeld: (id: string | null) => void;
+  senden: (body: Record<string, unknown>) => void;
+  laeuft: boolean;
 }) {
   const [aktiv, setAktiv] = useState<string | null>(null);
+  /* Die Not-Aus-Rückfrage der Schaltwarte. Zweistufig wie unten in
+     „Eingreifen" — dieselbe Regel, nur an einem zweiten Ort. */
+  const [notAus, setNotAus] = useState<string | null>(null);
 
   const wetter = z.parks[0]?.weather.source;
 
@@ -258,28 +276,190 @@ export function Lageplan({
           {/* Die drei Felder. Sie melden ihren Zeiger nach oben, damit die
               zugehörige Karte unter „Eingreifen" mitleuchtet — Ansehen und
               Anfassen sind zwei Orte, aber dasselbe Feld. */}
-          {felder.map((f) => (
-            <Knoten
-              key={f.park.id}
-              x={f.x}
-              y={f.y}
-              w={182}
-              h={88}
-              hervor={feldAktiv === f.park.id}
-              onZeiger={(an) => onFeld(an ? f.park.id : null)}
-              titel={f.park.name}
-              eyebrow={undefined}
-              zeilen={[
-                f.park.place.split(/[,—]/)[0].trim(),
-                `${fmt(f.output_kw / 1000)} von ${fmt(f.park.capacity_kw / 1000)} MW`,
-              ]}
-            />
-          ))}
+          {/* Das angefasste Feld wird zuletzt gezeichnet. SVG kennt kein
+              z-index — was später im Dokument steht, liegt oben. Ohne diese
+              Sortierung verschwände die Schaltwarte unter dem nächsten
+              Knoten. */}
+          {[...felder]
+            .sort((a, b) => (a.park.id === feldAktiv ? 1 : b.park.id === feldAktiv ? -1 : 0))
+            .map((f) => (
+              <Knoten
+                key={f.park.id}
+                x={f.x}
+                y={f.y}
+                w={182}
+                h={88}
+                hervor={feldAktiv === f.park.id}
+                onZeiger={(an) => {
+                  onFeld(an ? f.park.id : null);
+                  if (!an) setNotAus(null);
+                }}
+                panel={
+                  feldAktiv === f.park.id
+                    ? {
+                        hoehe: 128,
+                        inhalt: (
+                          <Schaltwarte
+                            park={f}
+                            laeuft={laeuft}
+                            notAusOffen={notAus === f.park.id}
+                            oeffneNotAus={() => setNotAus(f.park.id)}
+                            schliesseNotAus={() => setNotAus(null)}
+                            senden={(body: Record<string, unknown>) => {
+                              senden(body);
+                              setNotAus(null);
+                            }}
+                          />
+                        ),
+                      }
+                    : null
+                }
+                titel={f.park.name}
+                eyebrow={undefined}
+                zeilen={[
+                  f.park.place.split(/[,—]/)[0].trim(),
+                  `${fmt(f.output_kw / 1000)} von ${fmt(f.park.capacity_kw / 1000)} MW`,
+                ]}
+              />
+            ))}
         </svg>
 
         <Legende />
       </div>
     </div>
+  );
+}
+
+/*
+  Die Schaltwarte über der Feldkarte.
+
+  Doms Vorschlag, und er hat recht behalten: der Weg von „Feld Süd steht auf
+  0" zum Knopf, der das ändert, war zwei Bildschirme lang. Jetzt geht die
+  Bedienung dort auf, wo man hinsieht.
+
+  Meine drei Einwände von vorhin bleiben gültig — kein Hover auf Touch,
+  versteckte Bedienelemente werden nicht gefunden, der Not-Aus gehört nicht
+  hinter eine Mausbewegung. Sie sind der Grund, warum der Abschnitt
+  „Eingreifen" bestehen bleibt: die Schaltwarte ist der schnelle Weg, nicht
+  der einzige. Wer kein Hover hat oder sie nicht findet, verliert nichts.
+
+  Der Not-Aus bleibt auch hier zweistufig. Dieselbe Regel an einem zweiten
+  Ort — eine Sicherung, die je nach Bedienort anders greift, ist keine.
+*/
+function Schaltwarte({
+  park,
+  laeuft,
+  notAusOffen,
+  oeffneNotAus,
+  schliesseNotAus,
+  senden,
+}: {
+  park: Zustand["parks"][number];
+  laeuft: boolean;
+  notAusOffen: boolean;
+  oeffneNotAus: () => void;
+  schliesseNotAus: () => void;
+  senden: (body: Record<string, unknown>) => void;
+}) {
+  const sollwerte = park.devices.map((d) => d.device.setpoint);
+  const einig = sollwerte.every((v) => Math.abs(v - sollwerte[0]) < 0.001);
+  const sollwert = einig ? sollwerte[0] : null;
+
+  return (
+    <div
+      style={{
+        background: "var(--flaeche2)",
+        border: "1px solid var(--leise)",
+        borderRadius: "var(--radius-md)",
+        padding: 10,
+      }}
+    >
+      {notAusOffen ? (
+        <>
+          <div className="sk-mono-daten" style={{ color: "var(--leise)" }}>
+            {park.park.name} stilllegen?
+          </div>
+          <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+            <Taste
+              disabled={laeuft}
+              betont
+              onClick={() => senden({ action: "not_aus", park_id: park.park.id, bestaetigt: true })}
+            >
+              Wirklich stilllegen
+            </Taste>
+            <Taste disabled={laeuft} onClick={schliesseNotAus}>
+              Abbrechen
+            </Taste>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="sk-mono-daten" style={{ color: "var(--leise)" }}>
+            Sollwert setzen
+          </div>
+          <div style={{ display: "flex", gap: 5, marginTop: 6, flexWrap: "wrap" }}>
+            {STUFEN.map(([v, label]) => (
+              <Taste
+                key={v}
+                aktiv={sollwert !== null && Math.abs(sollwert - v) < 0.001}
+                disabled={laeuft}
+                onClick={() => senden({ action: "setpoint_setzen", park_id: park.park.id, value: v })}
+              >
+                {label}
+              </Taste>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 5, marginTop: 6, flexWrap: "wrap" }}>
+            <Taste disabled={laeuft} onClick={() => senden({ action: "freigeben", park_id: park.park.id })}>
+              Freigeben
+            </Taste>
+            <Taste disabled={laeuft} kritisch onClick={oeffneNotAus}>
+              Not-Aus
+            </Taste>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** Knopf der Schaltwarte. Dunkler Grund, sonst dieselbe Bauart wie unten. */
+function Taste({
+  children,
+  onClick,
+  disabled,
+  aktiv,
+  kritisch,
+  betont,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  aktiv?: boolean;
+  kritisch?: boolean;
+  betont?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-pressed={aktiv}
+      className="sk-mono-daten"
+      style={{
+        background: betont ? "var(--sk-estop-bg)" : aktiv ? "var(--text)" : "transparent",
+        color: betont ? "var(--sk-estop-label)" : aktiv ? "var(--grund)" : "var(--text)",
+        border: `1px solid ${kritisch ? "var(--krit)" : betont ? "var(--text)" : "var(--leise)"}`,
+        borderRadius: "var(--radius-sm)",
+        padding: "5px 8px",
+        minHeight: 24,
+        cursor: disabled ? "wait" : "pointer",
+        font: "inherit",
+        opacity: disabled ? 0.6 : 1,
+      }}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -335,6 +515,7 @@ function Knoten({
   dunkel,
   hervor,
   onZeiger,
+  panel,
 }: {
   x: number;
   y: number;
@@ -346,6 +527,10 @@ function Knoten({
   dunkel?: boolean;
   hervor?: boolean;
   onZeiger?: (an: boolean) => void;
+  /* Wird innerhalb derselben Gruppe gezeichnet und schließt bündig an den
+     Knoten an. Beides ist nötig: außerhalb der Gruppe würde der Zeiger sie
+     beim Hinüberfahren verlieren, mit Lücke ebenso. */
+  panel?: { hoehe: number; inhalt: React.ReactNode } | null;
 }) {
   /* „dunkel" hieß früher: dieser eine Knoten ist anders als die anderen.
      Auf der dunklen Insel sind alle Knoten gleich gebaut — die Marke
@@ -370,6 +555,28 @@ function Knoten({
         stroke={hervor ? "var(--text)" : dunkel ? "var(--leise)" : "var(--rahmen)"}
         strokeWidth={hervor ? 2 : 1}
       />
+      {panel &&
+        (() => {
+          /* Normalerweise klappt die Warte nach unten auf. Bei den heutigen
+             drei Feldern passt das — Feld Süd endet bei 620 von 720. Die
+             Lage der Knoten kommt aber aus echten Koordinaten: ein Park
+             weiter südlich schöbe sie über den Rand, und dort ist sie
+             abgeschnitten, weil das SVG nicht überläuft.
+             Deshalb die Prüfung statt des Verlassens auf den Zufall. */
+          const unten = y + h / 2 + 6 + panel.hoehe <= HOEHE - 8;
+          return (
+            <foreignObject
+              x={-4}
+              y={unten ? h : -(panel.hoehe + 6)}
+              width={w + 8}
+              height={panel.hoehe + 6}
+            >
+              <div style={{ paddingTop: unten ? 6 : 0, paddingBottom: unten ? 0 : 6 }}>
+                {panel.inhalt}
+              </div>
+            </foreignObject>
+          );
+        })()}
       <foreignObject x="0" y="0" width={w} height={h}>
         <div style={{ padding: "10px 12px", color: vordergrund }}>
           {eyebrow && (

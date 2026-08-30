@@ -29,17 +29,19 @@ const STUFEN: [number, string][] = [
 
 export function Schreibpfad({
   z,
-  nachKommando,
   feldAktiv,
   onFeld,
+  senden,
+  laeuft,
+  antwort,
 }: {
   z: Zustand;
-  nachKommando: () => void;
   feldAktiv: string | null;
   onFeld: (id: string | null) => void;
+  senden: (body: Record<string, unknown>) => void;
+  laeuft: boolean;
+  antwort: Command | null;
 }) {
-  const [antwort, setAntwort] = useState<{ command: Command } | null>(null);
-  const [laeuft, setLaeuft] = useState(false);
   const [notAusFuer, setNotAusFuer] = useState<string | null>(null);
   /* Welche Felder ihre Geräte zeigen. Ein Set, weil man zwei Felder
      nebeneinander vergleichen will — ein einzelner offener Eintrag würde
@@ -47,23 +49,12 @@ export function Schreibpfad({
      Knöpfen sind die Antwort auf eine Frage, die man erst stellen muss. */
   const [geraeteOffen, setGeraeteOffen] = useState<Set<string>>(new Set());
 
-  async function senden(body: Record<string, unknown>) {
-    setLaeuft(true);
-    try {
-      const r = await fetch("/api/kommando", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        /* requested_by zuerst, damit der Aufrufer es überschreiben kann.
-           Genau eine Stelle tut das: der Testschuss weiter unten. */
-        body: JSON.stringify({ requested_by: z.operatorId, ...body }),
-      });
-      setAntwort(await r.json());
-      nachKommando();
-    } finally {
-      setLaeuft(false);
-      setNotAusFuer(null);
-    }
-  }
+  /* Nach jedem Absenden ist die Not-Aus-Rückfrage erledigt — egal wie der
+     Wächter entschieden hat. */
+  const abschicken = (body: Record<string, unknown>) => {
+    senden(body);
+    setNotAusFuer(null);
+  };
 
   return (
     <section style={{ padding: "40px", background: "var(--color-bg)" }} aria-labelledby="eingreifen">
@@ -78,7 +69,7 @@ export function Schreibpfad({
         wenn er zustimmt. Abgelehnte Kommandos landen genauso im Log wie ausgeführte.
       </p>
 
-      <Mandant z={z} laeuft={laeuft} senden={senden} />
+      <Mandant z={z} laeuft={laeuft} senden={abschicken} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20, marginTop: 24 }}>
         {z.parks.map((p) => {
@@ -138,7 +129,7 @@ export function Schreibpfad({
                     key={v}
                     aktiv={sollwert !== null && Math.abs(sollwert - v) < 0.001}
                     disabled={laeuft}
-                    onClick={() => senden({ action: "setpoint_setzen", park_id: p.park.id, value: v })}
+                    onClick={() => abschicken({ action: "setpoint_setzen", park_id: p.park.id, value: v })}
                   >
                     {label}
                   </Knopf>
@@ -146,7 +137,7 @@ export function Schreibpfad({
               </div>
 
               <div style={{ display: "flex", gap: 6, marginTop: 12, flexWrap: "wrap" }}>
-                <Knopf disabled={laeuft} onClick={() => senden({ action: "freigeben", park_id: p.park.id })}>
+                <Knopf disabled={laeuft} onClick={() => abschicken({ action: "freigeben", park_id: p.park.id })}>
                   Freigeben
                 </Knopf>
 
@@ -155,7 +146,7 @@ export function Schreibpfad({
                     <button
                       type="button"
                       disabled={laeuft}
-                      onClick={() => senden({ action: "not_aus", park_id: p.park.id, bestaetigt: true })}
+                      onClick={() => abschicken({ action: "not_aus", park_id: p.park.id, bestaetigt: true })}
                       className="sk-text-titel"
                       style={{
                         /* Die dokumentierte Ausnahme: Datenfarbe auf einem
@@ -200,14 +191,14 @@ export function Schreibpfad({
                   })
                 }
                 laeuft={laeuft}
-                senden={senden}
+                senden={abschicken}
               />
             </div>
           );
         })}
       </div>
 
-      {antwort && <WaechterAntwort command={antwort.command} />}
+      {antwort && <WaechterAntwort command={antwort} />}
       <Log z={z} />
     </section>
   );

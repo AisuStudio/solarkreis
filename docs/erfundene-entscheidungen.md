@@ -22,13 +22,23 @@ Karte zu einem Bedienfeld machen, und der Hero verliert seine Aussage.
 *Alternative, falls das falsch ist:* Bedienung im Lageplan an den Feldknoten,
 dann muss der Hero aber neu gedacht werden.
 
-**Bestätigt am 30.08.** Doms Vorschlag war eine Schaltwarte im Hover über den
-Feldkarten. Dagegen sprachen drei Dinge: auf dem Touchgerät gibt es kein
-Hover, unsichtbare Bedienelemente werden in neunzig Sekunden nicht gefunden,
-und der Not-Aus wäre das am besten versteckte Element der Seite gewesen.
-Gebaut ist stattdessen die Verkopplung: Zeiger auf ein Feld im Lageplan hebt
-die zugehörige Karte unter „Eingreifen" hervor und umgekehrt, auch per Tab.
-Zwei Blicke bleiben zwei Blicke, aber man verliert das Feld nicht.
+**Geändert am 30.08 — beides, nicht eines.** Ich hatte Doms „ja" auf meinen
+Gegenvorschlag bezogen; gemeint war seine eigene Idee. Die Schaltwarte geht
+jetzt über der Feldkarte auf: vier Stufen, Freigeben, Not-Aus, letzterer
+zweistufig wie unten. Eine Sicherung, die je nach Bedienort anders greift,
+wäre keine.
+
+Meine drei Einwände bleiben gültig — kein Hover auf Touch, versteckte
+Bedienelemente werden nicht gefunden, der Not-Aus gehört nicht hinter eine
+Mausbewegung. Sie sind der Grund, warum „Eingreifen" bestehen bleibt: die
+Schaltwarte ist der schnelle Weg, nicht der einzige. Dazu die Verkopplung —
+Zeiger auf ein Feld hebt die zugehörige Karte unten hervor und umgekehrt,
+auch per Tab.
+
+Damit steht die ursprüngliche Entscheidung nur noch halb: die Bedienung sitzt
+unter dem Lageplan **und** in ihm. Der Hero bleibt davon unberührt, weil die
+Warte erst beim Anfassen erscheint — im Ruhezustand ist der Plan weiter nur
+ein Bild.
 
 Bei der Gelegenheit ist der gestrichelte Ring zwischen den Feldern gefallen.
 Dom fand unklar, was die Felder untereinander austauschen — die Antwort aus
