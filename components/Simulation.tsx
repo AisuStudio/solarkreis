@@ -178,6 +178,29 @@ export function Simulation({ initial }: { initial: Zustand }) {
           laeuft={laeuft}
         />
       </div>
+
+      {/* Die Einordnung, direkt unter der Insel.
+
+          Kein pauschales „kann Fehler enthalten" — das sagt nichts darüber,
+          welcher Teil wackelt, und würde die Kennzeichnungen entwerten, die
+          überall sonst genau dafür da sind: echt gegen simuliert an jeder
+          Quelle, „Stub, kein Auth" an der Mandantenzeile.
+
+          Dieser Satz sagt stattdessen, was das Ding ist, und zieht die
+          Grenze an der einzigen Stelle, an der sie im Bild verläuft. */}
+      <p
+        className="sk-text-kompakt"
+        style={{
+          margin: 0,
+          padding: "12px var(--gutter)",
+          color: "var(--color-muted)",
+          borderBottom: "1px solid var(--color-surface)",
+        }}
+      >
+        Arbeitsprobe, keine Betriebssoftware: die Parks sind simuliert, die
+        Eingangsdaten nicht.
+      </p>
+
       <Schreibpfad
         z={z}
         feldAktiv={feldAktiv}
