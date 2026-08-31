@@ -320,7 +320,21 @@ export function Lageplan({
                       park={f}
                       laeuft={laeuft}
                       notAusOffen={notAus === f.park.id}
-                      oeffneNotAus={() => setNotAus(f.park.id)}
+                      /* Beim Öffnen der Rückfrage wird das Feld festgehalten.
+
+                     Eine offene Sicherheitsabfrage darf nicht verschwinden,
+                     weil sich der Zeiger bewegt hat — das ist die Regel, und
+                     sie gilt unabhängig von der Geometrie.
+
+                     Der Auslöser war hier trotzdem Geometrie: die Rückfrage
+                     hat weniger Inhalt als die Stufenansicht, 120 statt 157
+                     Pixel. Der Zeiger stand auf dem Not-Aus-Knopf am unteren
+                     Rand und lag nach dem Klick über Leere — mouseleave, und
+                     die halb gestellte Frage war weg. */
+                  oeffneNotAus={() => {
+                    setNotAus(f.park.id);
+                    setGepinnt(f.park.id);
+                  }}
                       schliesseNotAus={() => setNotAus(null)}
                       senden={(body: Record<string, unknown>) => {
                         senden(body);
