@@ -21,11 +21,16 @@ const LINKS: [string, string, string][] = [
   /* Ohne den t=-Parameter aus Doms Adresszeile: der ist ein Sitzungsmerkmal
      seines Browsers und hat in einem Link, den Fremde öffnen, nichts zu
      suchen. node-id=0-1 öffnet die Seite mit den Wireframes, nicht die
-     zuletzt betrachtete. */
+     zuletzt betrachtete.
+
+     p=f steht dagegen drin, weil Dom genau diese Adresse im privaten
+     Fenster geprüft hat. Der Parameter ist vermutlich belanglos — aber bei
+     einem Link, der in eine Bewerbung geht, ist die geprüfte Fassung mehr
+     wert als die aufgeräumte. */
   [
     "Wireframes in Figma",
     "die Entwürfe vor dem Code",
-    "https://www.figma.com/design/iDqKPSwZ5pXciPmNzJQe7o/SolarKreis-%E2%80%94-Wireframes?node-id=0-1",
+    "https://www.figma.com/design/iDqKPSwZ5pXciPmNzJQe7o/SolarKreis-%E2%80%94-Wireframes?node-id=0-1&p=f",
   ],
   ["Dominik Heilig", "dominikheilig.com", "https://dominikheilig.com"],
 ];
