@@ -187,7 +187,12 @@ export function Simulation({ initial }: { initial: Zustand }) {
           Quelle, „Stub, kein Auth" an der Mandantenzeile.
 
           Dieser Satz sagt stattdessen, was das Ding ist, und zieht die
-          Grenze an der einzigen Stelle, an der sie im Bild verläuft. */}
+          Grenze an der einzigen Stelle, an der sie im Bild verläuft.
+
+          Der zweite Halbsatz stand zuerst nur in der README und in der Doku.
+          Er gehört hierher, weil hier die Folge auftritt: wer einen Sollwert
+          setzt, wiederkommt und alles auf Anfang findet, hält das sonst für
+          einen Fehler. Es ist die Speicher-Entscheidung. */}
       <p
         className="sk-text-kompakt"
         style={{
@@ -198,7 +203,8 @@ export function Simulation({ initial }: { initial: Zustand }) {
         }}
       >
         Arbeitsprobe, keine Betriebssoftware: die Parks sind simuliert, die
-        Eingangsdaten nicht.
+        Eingangsdaten nicht. Der Zustand liegt im Arbeitsspeicher und setzt sich
+        nach einer Ruhephase zurück.
       </p>
 
       <Schreibpfad
