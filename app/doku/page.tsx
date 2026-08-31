@@ -41,7 +41,11 @@ export default function DokuSeite() {
           maxWidth: 1200,
           margin: "0 auto",
           padding: "var(--sp-2xl) var(--gutter) var(--sp-4xl)",
-          alignItems: "start",
+          /* Kein alignItems: "start". Das machte den Kasten der Seitenspalte
+             genau so hoch wie ihren Inhalt — und `position: sticky` wird von
+             diesem Kasten begrenzt. Die Spalte hatte damit null Weg zum
+             Kleben und rutschte mit hoch. Gestreckt reicht ihr Kasten über
+             die ganze Zeile, und das Kleben hat Platz. */
         }}
       >
         <Seitenspalte />
@@ -262,29 +266,36 @@ function Q({ href, children }: { href: string; children: React.ReactNode }) {
 
 function Seitenspalte() {
   return (
-    <aside style={{ position: "sticky", top: "var(--sp-lg)" }} aria-label="Inhalt">
+    <aside aria-label="Inhalt">
+      {/* Das Kleben sitzt eine Ebene tiefer: die Spalte selbst füllt die
+          Zeile, dieser Kasten wandert darin mit.
+          top rechnet die Höhe der Hauptnavigation ein (56 px) — sonst
+          verschwindet die Überschrift „Inhalt" darunter, weil die Leiste
+          deckend ist und darüber liegt. */}
+      <div style={{ position: "sticky", top: "calc(56px + var(--sp-md))" }}>
       <div className="sk-mono-eyebrow" style={{ color: "var(--color-muted)" }}>Inhalt</div>
       <ol style={{ listStyle: "none", padding: 0, margin: "var(--sp-sm) 0 0", display: "grid", gap: 2 }}>
         {ABSCHNITTE.map(([n, t]) => (
           <li key={n} style={{ display: "flex", gap: "var(--sp-sm)" }}>
             {/* cortado, nicht hazelnut: auf hellem Grund misst hazelnut 2,24:1. */}
-            <span className="sk-mono-daten" style={{ color: "var(--color-muted)" }}>{n}</span>
-            <a href={`#a${n}`} className="sk-text-label" style={{ textDecoration: "none" }}>{t}</a>
+            <span className="sk-mono-kompakt" style={{ color: "var(--color-muted)" }}>{n}</span>
+            <a href={`#a${n}`} className="sk-text-kompakt" style={{ textDecoration: "none" }}>{t}</a>
           </li>
         ))}
       </ol>
 
       <div className="sk-mono-eyebrow" style={{ color: "var(--color-muted)", marginTop: "var(--sp-lg)" }}>Quellen</div>
       <div style={{ display: "grid", gap: "var(--sp-sm)", marginTop: "var(--sp-sm)" }}>
-        <a className="sk-text-label" href="https://github.com/AisuStudio/solarkreis">Code auf GitHub ↗</a>
-        <Link className="sk-text-label" href="/datenquellen">Datenquellen ↗</Link>
-        <Link className="sk-text-label" href="/ds">Designebene ↗</Link>
+        <a className="sk-text-kompakt" href="https://github.com/AisuStudio/solarkreis">Code auf GitHub ↗</a>
+        <Link className="sk-text-kompakt" href="/datenquellen">Datenquellen ↗</Link>
+        <Link className="sk-text-kompakt" href="/ds">Designebene ↗</Link>
       </div>
 
       <div className="sk-mono-eyebrow" style={{ color: "var(--color-muted)", marginTop: "var(--sp-lg)" }}>Werkzeug</div>
-      <div className="sk-mono-daten" style={{ color: "var(--color-muted)", marginTop: 2 }}>
+      <div className="sk-mono-kompakt" style={{ color: "var(--color-muted)", marginTop: 2 }}>
         Claude Code · Figma-MCP
       </div>
+    </div>
     </aside>
   );
 }
