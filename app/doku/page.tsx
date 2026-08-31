@@ -19,15 +19,14 @@ export const metadata = {
 
 const ABSCHNITTE = [
   ["01", "Was SolarKreis ist"],
-  ["02", "Architektur"],
-  ["03", "Datenquellen"],
-  ["04", "Datenmodell"],
-  ["05", "Read, Write, R&W"],
-  ["06", "Schreibpfad und Sicherheit"],
-  ["07", "Automatisierte Abläufe"],
-  ["08", "Event Sourcing"],
-  ["09", "Entscheidungen und Abwägungen"],
-  ["10", "Bewusst nicht gebaut"],
+  ["02", "Datenquellen"],
+  ["03", "Datenmodell"],
+  ["04", "Read, Write, R&W"],
+  ["05", "Schreibpfad und Sicherheit"],
+  ["06", "Automatisierte Abläufe"],
+  ["07", "Event Sourcing"],
+  ["08", "Entscheidungen und Abwägungen"],
+  ["09", "Bewusst nicht gebaut"],
 ] as const;
 
 export default function DokuSeite() {
@@ -71,26 +70,13 @@ export default function DokuSeite() {
             </H>
           </A>
 
-          <A n="02" t="Architektur">
-            <H t="Drei Felder, eine Zentrale, ein Speicher">
-              Templin 67 km bei 5°, Neuhardenberg 57 km bei 81°, Deutsch Bork 54 km bei 225° —
-              Nord, Ost, Südwest um Berlin.
-            </H>
-            <H t="Echte Geografie statt Schema">
-              Der Lageplan ordnet nicht an, er bildet ab. Die Positionen werden aus den
-              Koordinaten gerechnet, nicht gesetzt. Die Entfernungen ergeben von selbst ein
-              fast gleichseitiges Dreieck.
-            </H>
-            <H t="Der Kreis">
-              Felder tauschen mit der Zentrale in beide Richtungen und untereinander. Das ist
-              der Kreis im Namen.
-            </H>
-          </A>
-
-          <A n="03" t="Datenquellen">
+          <A n="02" t="Datenquellen">
             <H t="Drei, alle nur lesend">
-              Open-Meteo für Einstrahlung, Temperatur und Niederschlag. aWATTar für den
-              Strompreis, der am Vortag je Stunde festgelegt wird. NASA FIRMS für aktive Feuer.
+              <Q href="https://open-meteo.com/en/docs">Open-Meteo</Q> für Einstrahlung,
+              Temperatur und Niederschlag. <Q href="https://www.awattar.de/services/api">aWATTar</Q>{" "}
+              für den Strompreis, der am Vortag je Stunde festgelegt wird.{" "}
+              <Q href="https://firms.modaps.eosdis.nasa.gov/api/area/">NASA FIRMS</Q> für
+              aktive Feuer.
             </H>
             <H t="Satellit läuft aus">
               Suomi NPP wird zum 1.11.2026 abgeschaltet. SolarKreis fragt deshalb NOAA-21 und
@@ -103,7 +89,7 @@ export default function DokuSeite() {
             </H>
           </A>
 
-          <A n="04" t="Datenmodell">
+          <A n="03" t="Datenmodell">
             <H t="Drei Formate, ein Reading">
               Drei Hersteller senden dasselbe in drei Formaten. SolarKreis vereinheitlicht sie
               beim Eingang, nicht erst in der Anzeige.
@@ -116,22 +102,24 @@ export default function DokuSeite() {
             </H>
           </A>
 
-          <A n="05" t="Read, Write, R&W">
+          <A n="04" t="Read, Write, R&W">
             <H t="Wer liest, wer schreibt">
               Die externen Quellen geben nur Daten ab (read). Der Mensch gibt nur Befehle
               (write). Feld und Zentrale tauschen beides (r&amp;w).
             </H>
             <H t="Farbe ist nie das einzige Signal">
-              Richtung steht in der Pfeilspitze, der Kreis ist gestrichelt, jede Bahn trägt
-              eine dunkle Fassung.
+              Die Richtung steht in der Pfeilspitze, nicht im Farbton. Wer Farben nicht
+              unterscheidet, liest die Bahn trotzdem.
             </H>
-            <H t="Warum die Fassung">
-              Mango misst gegen den Seitengrund nur 2,65:1. Gefordert sind 3:1. Die Fassung
-              trägt den Kontrast, der Farbton die Bedeutung.
+            <H t="Warum jede Bahn eine Fassung hat">
+              Auf dem dunklen Grund des Lageplans trägt jede Farbe ihren Kontrast selbst —
+              zwischen 5,8:1 und 6,9:1, gefordert sind 3:1 für Nicht-Text. Die dunkle Fassung
+              hat deshalb eine andere Aufgabe: wo zwei Bahnen sich kreuzen, tritt die untere
+              zurück, und man kann einer einzelnen mit dem Auge folgen.
             </H>
           </A>
 
-          <A n="06" t="Schreibpfad und Sicherheit">
+          <A n="05" t="Schreibpfad und Sicherheit">
             <H t="Im Zweifel abschalten">
               Fail-closed heißt: im Zweifel nicht ausführen. Geschaltet wird nur bei gesundem
               Gerät, frischen Daten und berechtigtem Bediener. Fehlt eines davon, geht die
@@ -148,7 +136,7 @@ export default function DokuSeite() {
             </H>
           </A>
 
-          <A n="07" t="Automatisierte Abläufe">
+          <A n="06" t="Automatisierte Abläufe">
             <H t="Die Kreis-Regel ist eine Leiter">
               Die Netzgrenze ist das, was der Netzanschluss aufnehmen darf: 38,9 von 54 MW.
               Reißt der Kreis sie, oder wird der Preis negativ, geht der Überschuss in den
@@ -168,7 +156,7 @@ export default function DokuSeite() {
             </H>
           </A>
 
-          <A n="08" t="Event Sourcing">
+          <A n="07" t="Event Sourcing">
             <H t="Nichts wird überschrieben">
               Jede Änderung wird angehängt, nichts überschrieben. Den Sollwert rechnet
               SolarKreis aus allen Kommandos zusammen. Ein Kommando ohne Eintrag kann es
@@ -186,7 +174,7 @@ export default function DokuSeite() {
             </H>
           </A>
 
-          <A n="09" t="Entscheidungen und Abwägungen">
+          <A n="08" t="Entscheidungen und Abwägungen">
             <H t="Jede nennt ihre Alternative">
               Ohne die verworfene Möglichkeit ist eine Entscheidung nur eine Behauptung.
             </H>
@@ -222,7 +210,7 @@ export default function DokuSeite() {
             />
           </A>
 
-          <A n="10" t="Bewusst nicht gebaut">
+          <A n="09" t="Bewusst nicht gebaut">
             <H t="Jeder Eintrag nennt seine Messung">
               {"Ein „passt nicht ins Scope“ ohne Beleg ist eine Behauptung, keine Entscheidung."}
               Die Langfassung steht in <code className="sk-mono-kompakt">docs/scope-out.md</code>.
@@ -249,6 +237,24 @@ export default function DokuSeite() {
         </main>
       </div>
     </>
+  );
+}
+
+/*
+  Ein Verweis auf die Quelle selbst. Der Pfeil sitzt direkt am Namen, nicht
+  als Liste darunter: wer wissen will, wo eine Zahl herkommt, fragt beim
+  Namen und nicht am Ende des Absatzes.
+
+  Ziel ist die Dokumentationsseite der jeweiligen Schnittstelle, nicht die
+  Startseite des Anbieters — dort steht, was SolarKreis tatsächlich abruft.
+  rel="noreferrer", damit der Klick nicht mitteilt, von wo aus er kam.
+*/
+function Q({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a href={href} target="_blank" rel="noreferrer">
+      {children}
+      <span aria-hidden="true"> ↗</span>
+    </a>
   );
 }
 

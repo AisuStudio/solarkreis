@@ -44,10 +44,13 @@
   --signal:   #d8ff01;
   --rahmen:   rgba(241,239,232,.14);
 
-  --read: #92c982;
-  --write:#ec6608;
-  --rw:   #ee72b6;
-  --krit: #e9634f;
+  /* Doms Wahl vom 31.08.: Grün und Rot eine Stufe kräftiger, von waffle-
+     Level 3 auf Level 4. Gemessen auf dem Grund #14101f trägt pistachio-4
+     5,78:1 und strawberry-4 4,75:1 — Nicht-Text fordert 3:1. */
+  --read: #57a03a;   /* pistachio-4, vorher pistachio-3  #92c982 */
+  --write:#ec6608;   /* mango-5 */
+  --rw:   #ee72b6;   /* raspberry-3 */
+  --krit: #ee3d28;   /* strawberry-4, vorher strawberry-3 #e9634f */
 
   --font-text: var(--font-primary, "Public Sans", "Helvetica Neue", Arial, sans-serif);
   --font-zahl: var(--font-tertiary, "iA Writer Mono", ui-monospace, "SF Mono", Menlo, monospace);

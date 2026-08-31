@@ -61,10 +61,22 @@ const SPEICHER = { x: MITTE.x + 185, y: MITTE.y + 95 };
 
 /* ── Farbrollen der Bahnen ───────────────────────────────────────────────── */
 type Fluss = "read" | "write" | "rw";
-const FLUSS_FARBE: Record<Fluss, string> = {
-  read: "var(--sk-read)",
-  write: "var(--sk-write)",
-  rw: "var(--sk-rw)",
+
+/* Die dunkle Palette, nicht die helle.
+
+   Hier standen bis zum 31.08. --sk-read/-write/-rw, also die Tokens für
+   hellen Grund. Auf der dunklen Insel sahen sie brauchbar aus, waren aber
+   die falsche Reihe: pistachio-5 misst dort 3,66:1 und lag damit knapp über
+   der Schwelle für Nicht-Text, statt komfortabel darüber.
+
+   „krit" ist keine Bahnart — es gibt keine kritische Leitung im Plan. Der
+   Eintrag steht hier trotzdem, weil Legende und Pfeilspitzen dieselbe
+   Zuordnung brauchen und zwei Tabellen für dieselbe Sache auseinanderlaufen. */
+const FLUSS_FARBE: Record<Fluss | "krit", string> = {
+  read: "var(--read)",
+  write: "var(--write)",
+  rw: "var(--rw)",
+  krit: "var(--krit)",
 };
 
 /* ── Quellen in der Seitenspalte ─────────────────────────────────────────── */
@@ -206,9 +218,28 @@ export function Lageplan({
           style={{ display: "block" }}
         >
           <defs>
-            <marker id="pfeil-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-              <path d="M0,1 L9,5 L0,9 z" fill="var(--leise)" />
-            </marker>
+            {/* Eine Pfeilspitze je Flussart.
+
+                Vorher trugen alle denselben grauen Marker — die Spitze sagte
+                damit nichts darüber, welcher Fluss dort ankommt, obwohl die
+                Linie davor es sagt. Ein Marker erbt die Farbe seines Pfades
+                nicht von allein; `context-stroke` könnte das, ist aber nicht
+                überall verlässlich. Vier Marker sind billiger als eine
+                Abhängigkeit, die in manchen Browsern still versagt. */}
+            {(["read", "write", "rw", "krit"] as const).map((art) => (
+              <marker
+                key={art}
+                id={`pfeil-${art}`}
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="5"
+                markerHeight="5"
+                orient="auto-start-reverse"
+              >
+                <path d="M0,1 L9,5 L0,9 z" fill={FLUSS_FARBE[art]} />
+              </marker>
+            ))}
           </defs>
 
           {/* Der Ring zwischen den Feldern ist raus.
@@ -239,7 +270,12 @@ export function Lageplan({
           {quellen.map((q, i) => (
             <Bahn
               key={`quelle-${q.id}`}
-              d={`M 0 ${eintritt(i)} H ${steigleitung(i)} V ${anschluss(i)} H ${MITTE.x - 82}`}
+              d={ecke([
+                [0, eintritt(i)],
+                [steigleitung(i), eintritt(i)],
+                [steigleitung(i), anschluss(i)],
+                [MITTE.x - 82, anschluss(i)],
+              ])}
               fluss={q.fluss}
               gerichtet
               opacity={bahnOpacity(q.id)}
@@ -269,14 +305,24 @@ export function Lageplan({
             strokeWidth="1.5"
             strokeDasharray="4 4"
           />
+          {/* Kapazität und Leistung standen als ein Titel nebeneinander:
+              „20 MWh · 5 MW". Nach der Vergrößerung der Schrift passte das
+              nicht mehr in eine Zeile und brach hinter dem Wert um — „5"
+              oben, „MW" unten. Ein Umbruch mitten in einer Einheit liest
+              sich als Fehler.
+              Jetzt trägt jede Zeile eine Größe: oben, was der Speicher fasst,
+              darunter, wie schnell er sie abgibt. */}
           <Knoten
             x={SPEICHER.x}
             y={SPEICHER.y}
             w={170}
-            h={76}
+            h={106}
             eyebrow="Speicher"
-            titel={`${z.speicher.stamm.capacity_kwh / 1000} MWh · ${z.speicher.stamm.power_kw / 1000} MW`}
-            zeilen={[`${Math.round(z.speicher.soc * 100)} % · ${z.speicher.mode}`]}
+            titel={`${z.speicher.stamm.capacity_kwh / 1000} MWh`}
+            zeilen={[
+              `${z.speicher.stamm.power_kw / 1000} MW`,
+              `${Math.round(z.speicher.soc * 100)} % · ${z.speicher.mode}`,
+            ]}
           />
 
           {/* Die drei Felder. Sie melden ihren Zeiger nach oben, damit die
@@ -587,6 +633,43 @@ function grundFuer(f: Zustand["parks"][number]): string {
   return "";
 }
 
+/*
+  Rechtwinkliger Pfad mit ausgerundeten Ecken.
+
+  Die Zuleitungen liefen als `M … H … V … H …` mit scharfen 90°-Knicken. Ein
+  Radius lässt sich darauf nicht setzen — SVG kennt keine Eckenrundung für
+  Pfade, nur für Rechtecke. Also wird die Ecke selbst ersetzt: ein Stück vor
+  dem Knick abbrechen, mit einer quadratischen Kurve über den Scheitel und
+  ein Stück dahinter weiter.
+
+  Der Radius wird an kurzen Abschnitten gekappt (`min` mit der halben
+  Segmentlänge). Ohne das würden zwei nah beieinander liegende Ecken sich
+  gegenseitig überholen, und der Pfad schlüge einen Haken.
+
+  Fassung und Farblinie teilen sich denselben String, deshalb runden beide
+  gemeinsam.
+*/
+function ecke(punkte: [number, number][], r = 10): string {
+  if (punkte.length < 2) return "";
+  let d = `M ${punkte[0][0]} ${punkte[0][1]}`;
+  for (let i = 1; i < punkte.length - 1; i++) {
+    const [px, py] = punkte[i - 1];
+    const [x, y] = punkte[i];
+    const [nx, ny] = punkte[i + 1];
+    const l1 = Math.hypot(x - px, y - py);
+    const l2 = Math.hypot(nx - x, ny - y);
+    if (l1 === 0 || l2 === 0) continue;
+    const rr = Math.min(r, l1 / 2, l2 / 2);
+    const ax = x - ((x - px) / l1) * rr;
+    const ay = y - ((y - py) / l1) * rr;
+    const bx = x + ((nx - x) / l2) * rr;
+    const by = y + ((ny - y) / l2) * rr;
+    d += ` L ${ax} ${ay} Q ${x} ${y} ${bx} ${by}`;
+  }
+  const [ex, ey] = punkte[punkte.length - 1];
+  return `${d} L ${ex} ${ey}`;
+}
+
 /* ── Bausteine ───────────────────────────────────────────────────────────── */
 
 /* Ohne den Ring gibt es keine gestrichelte Bahn mehr. Der Schalter dafür ist
@@ -611,11 +694,17 @@ function Bahn({
       <path
         d={d}
         fill="none"
-        stroke="var(--sk-line-casing)"
+        /* Die Fassung trennt kreuzende Bahnen voneinander. Sie stand auf
+           --sk-line-casing (blueberry, für hellen Grund gedacht) und liegt
+           damit heller als die dunkle Insel — was aussieht, als hätte jede
+           Linie einen Schimmer. Der Grund selbst ist das Richtige: dort, wo
+           zwei Bahnen sich kreuzen, tritt die untere zurück, sonst sieht man
+           die Fassung gar nicht. */
+        stroke="var(--grund)"
         strokeWidth="var(--sk-line-casing-w)"
         strokeLinecap="round"
-        markerEnd={gerichtet || beidseitig ? "url(#pfeil-ink)" : undefined}
-        markerStart={beidseitig ? "url(#pfeil-ink)" : undefined}
+        markerEnd={gerichtet || beidseitig ? `url(#pfeil-${fluss})` : undefined}
+        markerStart={beidseitig ? `url(#pfeil-${fluss})` : undefined}
       />
       <path
         d={d}
@@ -673,9 +762,42 @@ function Knoten({
      über die Fläche, nicht über eine eigene Farbwelt. */
   const vordergrund = "var(--text)";
   const sekundaer = "var(--leise)";
+
+  /* Die Höhe kommt aus dem Inhalt, nicht aus einer Zahl im Aufruf.
+
+     Vorher stand sie fest: 92 für die Zentrale, 88 für ein Feld, 76 für den
+     Speicher. Solange die Schrift gleich blieb, ging das auf. Nach der
+     Neubewertung der Skala lagen drei von fünf Knoten über ihrem Kasten —
+     die Zentrale um 7 Pixel, Feld Ost um 11, der Speicher um so viel, dass
+     Dom es gemeldet hat.
+
+     Die übergebene Höhe bleibt als Untergrenze: sie hält die Kästen gleich
+     groß, solange der Inhalt kleiner ist, und wächst nur, wo er es verlangt.
+     Ohne Untergrenze wäre jedes Feld anders hoch, je nach Ortsnamen. */
+  const [gemessen, setGemessen] = useState(h);
+  const inhalt = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = inhalt.current;
+    if (!el) return;
+    const svg = el.closest("svg");
+    const messen = () => {
+      const skala = svg ? svg.getBoundingClientRect().width / BREITE : 1;
+      if (!skala || !isFinite(skala)) return;
+      /* Zwei Pixel Zugabe: die Messung läuft über einen skalierten
+         SVG-Maßstab, und ein Rundungsrest von einem halben Pixel würde
+         die letzte Zeile wieder anschneiden. */
+      setGemessen(Math.ceil(el.getBoundingClientRect().height / skala) + 2);
+    };
+    messen();
+    const beobachter = new ResizeObserver(messen);
+    beobachter.observe(el);
+    return () => beobachter.disconnect();
+  });
+  const hh = Math.max(h, gemessen);
+
   return (
     <g
-      transform={`translate(${x - w / 2} ${y - h / 2})`}
+      transform={`translate(${x - w / 2} ${y - hh / 2})`}
       onMouseEnter={onZeiger ? () => onZeiger(true) : undefined}
       onMouseLeave={onZeiger ? () => onZeiger(false) : undefined}
       {...(bedienbar
@@ -702,15 +824,15 @@ function Knoten({
           Der Rahmen sagt „dieser hier" und lässt den Inhalt in Ruhe. */}
       <rect
         width={w}
-        height={h}
+        height={hh}
         rx="var(--radius-md)"
         fill={dunkel ? "var(--flaeche2)" : "var(--flaeche)"}
         stroke={hervor ? "var(--text)" : dunkel ? "var(--leise)" : "var(--rahmen)"}
         strokeWidth={hervor ? 2 : 1}
       />
-      {panel && <Warte y={y} h={h} w={w}>{panel}</Warte>}
-      <foreignObject x="0" y="0" width={w} height={h}>
-        <div style={{ padding: "10px 12px", color: vordergrund }}>
+      {panel && <Warte y={y} h={hh} w={w}>{panel}</Warte>}
+      <foreignObject x="0" y="0" width={w} height={hh}>
+        <div ref={inhalt} style={{ padding: "10px 12px", color: vordergrund }}>
           {eyebrow && (
             <div className="sk-mono-eyebrow" style={{ color: sekundaer }}>
               {eyebrow}
