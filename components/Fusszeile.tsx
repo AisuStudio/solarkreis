@@ -3,7 +3,7 @@
   Seite — vorher lag er nur auf der Introseite und wäre bei jeder Änderung
   viermal zu pflegen gewesen.
 
-  Drei Verweise, jeder mit einer Zeile darunter, die sagt, wohin er führt.
+  Vier Verweise, jeder mit einer Zeile darunter, die sagt, wohin er führt.
   Die letzte Karte ist der Urheber: ohne sie ist eine Arbeitsprobe anonym.
 
   „Hero als eine Datei" stand hier bis zum 31.08. und ist raus. Der Prototyp
@@ -18,6 +18,15 @@
 const LINKS: [string, string, string][] = [
   ["Code auf GitHub", "github.com/AisuStudio/solarkreis", "https://github.com/AisuStudio/solarkreis"],
   ["Datenquellen", "was gerade wirklich antwortet", "/datenquellen"],
+  /* Ohne den t=-Parameter aus Doms Adresszeile: der ist ein Sitzungsmerkmal
+     seines Browsers und hat in einem Link, den Fremde öffnen, nichts zu
+     suchen. node-id=0-1 öffnet die Seite mit den Wireframes, nicht die
+     zuletzt betrachtete. */
+  [
+    "Wireframes in Figma",
+    "die Entwürfe vor dem Code",
+    "https://www.figma.com/design/iDqKPSwZ5pXciPmNzJQe7o/SolarKreis-%E2%80%94-Wireframes?node-id=0-1",
+  ],
   ["Dominik Heilig", "dominikheilig.com", "https://dominikheilig.com"],
 ];
 
