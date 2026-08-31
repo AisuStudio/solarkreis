@@ -175,8 +175,14 @@ export default function Startseite() {
             <Zeit t="Brutto" v="10,9 h" u="erster bis letzter Commit" />
             <Zeit t="Netto" v="6,5 h" u="abzüglich 40 % Unterbrechung" />
           </dl>
+          {/* Hier stand „Die einzelnen Schritte stehen in der Dokumentation".
+              Sie stehen dort nicht — die sieben nummerierten Schritte sind
+              gestern von dieser Seite geflogen und waren nie in der Doku.
+              Ein Verweis, der etwas verspricht, was am Ziel nicht steht, ist
+              schlimmer als kein Verweis. Jetzt sagt er, was dort wirklich
+              zu finden ist. */}
           <p className="sk-text-kompakt" style={{ color: "var(--color-muted)", marginTop: "var(--sp-md)" }}>
-            Die einzelnen Schritte stehen in der{" "}
+            Wie das im Einzelnen gebaut ist und warum so, steht in der{" "}
             <Link href="/doku">Dokumentation</Link>.
           </p>
         </Abschnitt>

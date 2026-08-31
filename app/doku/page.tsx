@@ -82,14 +82,12 @@ export default function DokuSeite() {
               <Q href="https://firms.modaps.eosdis.nasa.gov/api/area/">NASA FIRMS</Q> für
               aktive Feuer.
             </H>
-            <H t="Satellit läuft aus">
-              Suomi NPP wird zum 1.11.2026 abgeschaltet. SolarKreis fragt deshalb NOAA-21 und
-              NOAA-20 ab.
-            </H>
             <H t="Ein roher Feed ist kein Alarm">
-              FIRMS lieferte am 30.08. für fünf Tage 153 Detektionen, 101 davon im 50-km-Umkreis
-              der Felder. Ein Alarm darauf hätte 101-mal ausgelöst. Es gilt deshalb eine
-              gemessene Schwelle: Hinweis ab 5 MW in 10 km, kritisch ab 10 MW in 5 km.
+              Ein Satellitentreffer ist eine Wärmedetektion, keine Gefahrenmeldung. Ohne
+              Schwelle hätte jeder Treffer im Umkreis einen Alarm ausgelöst — an einem
+              gemessenen Tag über hundert. Es gilt deshalb: Hinweis ab 5 MW in 10 km,
+              kritisch ab 10 MW in 5 km. Die Messung dahinter steht mit den heutigen Zahlen
+              auf der <Link href="/datenquellen">Datenquellen-Seite</Link>.
             </H>
           </A>
 
@@ -287,8 +285,11 @@ function Seitenspalte() {
       <div className="sk-mono-eyebrow" style={{ color: "var(--color-muted)", marginTop: "var(--sp-lg)" }}>Quellen</div>
       <div style={{ display: "grid", gap: "var(--sp-sm)", marginTop: "var(--sp-sm)" }}>
         <a className="sk-text-kompakt" href="https://github.com/AisuStudio/solarkreis">Code auf GitHub ↗</a>
-        <Link className="sk-text-kompakt" href="/datenquellen">Datenquellen ↗</Link>
-        <Link className="sk-text-kompakt" href="/ds">Designebene ↗</Link>
+        {/* Interne Ziele tragen den geraden Pfeil, externe den schrägen —
+            dieselbe Unterscheidung wie in der Fußzeile. Hier stand dreimal
+            der schräge, auch für zwei Seiten dieses Projekts. */}
+        <Link className="sk-text-kompakt" href="/datenquellen">Datenquellen →</Link>
+        <Link className="sk-text-kompakt" href="/ds">Designebene →</Link>
       </div>
 
       <div className="sk-mono-eyebrow" style={{ color: "var(--color-muted)", marginTop: "var(--sp-lg)" }}>Werkzeug</div>

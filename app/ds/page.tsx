@@ -5,7 +5,7 @@
 const FLOWS = [
   { key: "read",  label: "read",     line: "var(--sk-read)",  fill: "var(--sk-read-fill)",  desc: "Nur lesen. Messwerte, Wetter, Preis, Feuer." },
   { key: "write", label: "write",    line: "var(--sk-write)", fill: "var(--sk-write-fill)", desc: "Nur schreiben. Sollwert, Drosselung, Not-Aus." },
-  { key: "rw",    label: "r&w",      line: "var(--sk-rw)",    fill: "var(--sk-rw-fill)",    desc: "Beides. Feld↔HQ, der Kreis." },
+  { key: "rw",    label: "r&w",      line: "var(--sk-rw)",    fill: "var(--sk-rw-fill)",    desc: "Beides. Feld liest vom HQ und schreibt an es zurück." },
   { key: "crit",  label: "kritisch", line: "var(--sk-crit)",  fill: "var(--sk-crit-fill)",  desc: "Not-Aus, Überhitzung, Feuer in der Nähe." },
 ];
 

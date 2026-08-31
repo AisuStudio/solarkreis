@@ -107,15 +107,14 @@ export function Simulation({ initial }: { initial: Zustand }) {
   const [anstoss, setAnstoss] = useState(0);
 
   /* Welches Feld gerade angesehen wird. Der Zustand liegt hier, weil ihn
-     zwei Geschwister brauchen: der Lageplan zeigt das Feld, „Eingreifen"
-     bedient es. Wer im Plan darüberfährt, sieht unten die zugehörige Karte
-     aufleuchten — und wer unten eine Karte anfasst oder antabbt, sieht oben
-     das Feld. Der Weg bleibt zwei Blicke lang, aber man verliert das Feld
-     dabei nicht. */
+     zwei Geschwister brauchen: der Lageplan bedient das Feld, der Nachweis
+     darunter führt es auf. Wer im Plan darüberfährt, sieht unten die
+     zugehörige Karte aufleuchten — und wer unten eine Karte anfasst oder
+     antabbt, sieht oben das Feld. */
   const [feldAktiv, setFeldAktiv] = useState<string | null>(null);
 
   /* Ein Weg zum Wächter, zwei Bedienorte: die Schaltwarte über der Feldkarte
-     im Lageplan und der Abschnitt „Eingreifen" darunter. */
+     im Lageplan und die Geräteliste im Nachweis darunter. */
   const { senden, laeuft, antwort } = useKommando(z.operatorId, () =>
     setAnstoss((n) => n + 1),
   );
@@ -151,7 +150,7 @@ export function Simulation({ initial }: { initial: Zustand }) {
           einen Grund und liegen deshalb in einem Element. Die dunkle Palette
           hängt an dieser Klasse — ohne den gemeinsamen Rahmen löst
           var(--grund) in der Statusleiste nicht auf.
-          „Eingreifen" darunter bleibt hell: eine dunkle Insel in hellem
+          Der Nachweis darunter bleibt hell: eine dunkle Insel in hellem
           Umfeld, dieselbe Aufteilung wie auf der Introseite. */}
       <div className="sk-dunkelzone">
         <StatusBar z={z} />

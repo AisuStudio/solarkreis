@@ -111,7 +111,11 @@ export default async function DatenquellenSeite() {
           auflagen={[
             `Schwellen: Hinweis ab ${z.feuer.schwellen.hinweis_frp} MW innerhalb von ${z.feuer.schwellen.hinweis_km} km, kritisch ab ${z.feuer.schwellen.kritisch_frp} MW innerhalb von ${z.feuer.schwellen.kritisch_km} km.`,
             "Warum überhaupt eine Schwelle: der rohe Feed lieferte am 30.08. für fünf Tage 153 Detektionen, 101 davon im 50-km-Umkreis. Ein Alarm darauf hätte 101-mal ausgelöst. FRP-Median 4,2 MW, Konfidenz 137-mal „nominal“, null-mal „hoch“ — Ende August ist in Brandenburg Erntezeit.",
-            "Feuer meldet, aber schaltet nicht. Eine Anlage stillzulegen, weil ein Satellit Wärme gesehen hat, wäre die falsche Richtung von fail-closed.",
+            /* Derselbe Grundsatz steht in der Doku unter „Automatisierte
+               Abläufe" — dort als Regel für die Automatik. Hier steht er in
+               der Sprache der Quelle: was dieser Feed auslöst und was nicht.
+               Vorher war es zweimal derselbe Satz, wortgleich. */
+            "Was FIRMS auslöst, ist eine Meldung, kein Schaltbefehl. Über eine Stilllegung entscheidet ein Mensch.",
             "Die API deckelt den Zeitraum auf fünf Tage. Der frühere Entwurf versprach zehn — geändert wurde die Beschriftung, nicht die Abfrage.",
           ]}
         />

@@ -39,10 +39,10 @@ function versatzKm(lat: number, lon: number) {
   };
 }
 
-/* Dieselben vier Stufen wie in „Eingreifen". Sie stehen dort schon einmal;
-   ein Import quer zwischen zwei Bedienoberflächen wäre die schlechtere
-   Kopplung als zwei kurze Listen mit demselben Inhalt. Falls daraus je drei
-   Listen werden, gehören sie nach lib/. */
+/* Dieselben vier Stufen wie in der Geräteliste des Nachweises. Sie stehen
+   dort ein zweites Mal; ein Import quer zwischen zwei Bausteinen wäre die
+   schlechtere Kopplung als zwei kurze Listen mit demselben Inhalt. Falls
+   daraus je drei Listen werden, gehören sie nach lib/. */
 const STUFEN: [number, string][] = [
   [1, "100 %"],
   [0.75, "75 %"],
@@ -104,8 +104,9 @@ export function Lageplan({
   laeuft: boolean;
 }) {
   const [aktiv, setAktiv] = useState<string | null>(null);
-  /* Die Not-Aus-Rückfrage der Schaltwarte. Zweistufig wie unten in
-     „Eingreifen" — dieselbe Regel, nur an einem zweiten Ort. */
+  /* Die Not-Aus-Rückfrage der Schaltwarte. Zweistufig, weil eine kritische
+     Aktion eine zweite Hand braucht — die Regel stand vor der Oberfläche
+     fest und ist nicht verhandelbar. */
   const [notAus, setNotAus] = useState<string | null>(null);
   /* Festgehalten heißt: die Warte bleibt offen, auch wenn der Zeiger geht.
      Das ist der Weg für alle, die nicht mit der Maus arbeiten — antippen,
@@ -326,8 +327,8 @@ export function Lageplan({
           />
 
           {/* Die drei Felder. Sie melden ihren Zeiger nach oben, damit die
-              zugehörige Karte unter „Eingreifen" mitleuchtet — Ansehen und
-              Anfassen sind zwei Orte, aber dasselbe Feld. */}
+              zugehörige Karte im Nachweis darunter mitleuchtet — geschaltet
+              wird hier, nachgelesen wird dort, aber es ist dasselbe Feld. */}
           {/* Das angefasste Feld wird zuletzt gezeichnet. SVG kennt kein
               z-index — was später im Dokument steht, liegt oben. Ohne diese
               Sortierung verschwände die Schaltwarte unter dem nächsten
@@ -412,11 +413,12 @@ export function Lageplan({
   0" zum Knopf, der das ändert, war zwei Bildschirme lang. Jetzt geht die
   Bedienung dort auf, wo man hinsieht.
 
-  Meine drei Einwände von vorhin bleiben gültig — kein Hover auf Touch,
-  versteckte Bedienelemente werden nicht gefunden, der Not-Aus gehört nicht
-  hinter eine Mausbewegung. Sie sind der Grund, warum der Abschnitt
-  „Eingreifen" bestehen bleibt: die Schaltwarte ist der schnelle Weg, nicht
-  der einzige. Wer kein Hover hat oder sie nicht findet, verliert nichts.
+  Meine drei Einwände von vorhin — kein Hover auf Touch, versteckte
+  Bedienelemente werden nicht gefunden, der Not-Aus gehört nicht hinter eine
+  Mausbewegung — sind nicht ausgeräumt, sondern beantwortet: die Feldkarte
+  ist kein reines Hover-Ziel mehr. Sie ist ein Knopf mit tabIndex und
+  aria-expanded, reagiert auf Klick und Eingabetaste und schließt auf
+  Escape. Erst dadurch durften die doppelten Knöpfe darunter weichen.
 
   Der Not-Aus bleibt auch hier zweistufig. Dieselbe Regel an einem zweiten
   Ort — eine Sicherung, die je nach Bedienort anders greift, ist keine.
