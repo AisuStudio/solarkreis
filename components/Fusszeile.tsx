@@ -3,8 +3,13 @@
   Seite — vorher lag er nur auf der Introseite und wäre bei jeder Änderung
   viermal zu pflegen gewesen.
 
-  Vier Verweise, jeder mit einer Zeile darunter, die sagt, wohin er führt.
+  Drei Verweise, jeder mit einer Zeile darunter, die sagt, wohin er führt.
   Die letzte Karte ist der Urheber: ohne sie ist eine Arbeitsprobe anonym.
+
+  „Hero als eine Datei" stand hier bis zum 31.08. und ist raus. Der Prototyp
+  public/hero.html bleibt im Repo — als Zwilling zur React-Fassung ist er
+  nützlich. Für jemanden, der die Seite liest, ist er ein Bauteil aus der
+  Werkstatt und kein Ziel.
 
   Externe Ziele tragen rel="noreferrer" — der Verweis soll nicht mitteilen,
   von welcher Unterseite aus jemand geklickt hat.
@@ -13,7 +18,6 @@
 const LINKS: [string, string, string][] = [
   ["Code auf GitHub", "github.com/AisuStudio/solarkreis", "https://github.com/AisuStudio/solarkreis"],
   ["Datenquellen", "was gerade wirklich antwortet", "/datenquellen"],
-  ["Hero als eine Datei", "public/hero.html", "/hero.html"],
   ["Dominik Heilig", "dominikheilig.com", "https://dominikheilig.com"],
 ];
 
