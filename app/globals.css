@@ -52,7 +52,20 @@
    eines Attributs, kein Umbau.                                            */
 * { box-sizing: border-box; }
 
-html, body { height: 100%; margin: 0; padding: 0; }
+/* min-height statt height.
+
+   `height: 100%` nagelt den Körper auf Fensterhöhe fest. Das fällt nicht
+   auf, solange nichts daran hängt — aber `position: sticky` wird von
+   seinem Elternkasten begrenzt, und der war damit 900 Pixel hoch. Die
+   Navigationsleiste klebte bis dahin und rutschte danach mit weg: auf der
+   Introseite ab der zweiten Zeile der Schlagzeile, auf der Simulation
+   etwa auf Höhe der Operator-Karte.
+
+   `min-height` lässt den Körper mit dem Inhalt wachsen und füllt das
+   Fenster trotzdem, wenn wenig darin steht. */
+html { height: 100%; }
+html, body { margin: 0; padding: 0; }
+body { min-height: 100%; }
 
 body {
   background: var(--color-bg);

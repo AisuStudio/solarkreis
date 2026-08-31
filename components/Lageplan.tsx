@@ -347,7 +347,7 @@ export function Lageplan({
                 eyebrow={undefined}
                 zeilen={[
                   f.park.place.split(/[,—]/)[0].trim(),
-                  `${fmt(f.output_kw / 1000)} von ${fmt(f.park.capacity_kw / 1000)} MW`,
+                  `${fmt(f.output_kw / 1000)} von ${fmt(f.park.capacity_kw / 1000)} MW${grundFuer(f)}`,
                 ]}
               />
             ))}
@@ -553,6 +553,38 @@ function Taste({
       {children}
     </button>
   );
+}
+
+/*
+  Warum das Feld liefert, was es liefert.
+
+  „Sollwert 100 % · 0,0 von 18,0 MW" liest sich beim ersten Mal wie ein
+  Fehler. Ist es nicht: der Sollwert ist eine Obergrenze, kein Ziel. Nachts
+  ist die Einstrahlung null, und null mal irgendetwas bleibt null.
+
+  Die Karte wusste das und sagte es nicht. Jetzt steht der bindende Grund
+  hinter der Zahl. Reihenfolge: erst was jemand entschieden hat, dann was
+  die Anlage meldet, dann was die Sonne vorgibt — vom Behebbaren zum
+  Gegebenen.
+*/
+function grundFuer(f: Zustand["parks"][number]): string {
+  const sollwerte = f.devices.map((d) => d.device.setpoint);
+  const alleAus = f.devices.every((d) => d.device.status === "offline");
+  const hoechster = Math.max(...sollwerte, 0);
+
+  if (alleAus) return " · offline";
+  if (hoechster === 0) return " · stillgelegt";
+
+  /* Über der Nachweisgrenze braucht es keine Erklärung — man sieht ja,
+     dass etwas kommt. Nur die Drosselung bleibt erwähnenswert, weil sie
+     eine Entscheidung ist und keine Wetterlage. */
+  if (f.output_kw > 0.05) {
+    return hoechster < 1 ? ` · gedrosselt auf ${Math.round(hoechster * 100)} %` : "";
+  }
+
+  if (!f.daylight) return " · Nacht";
+  if (f.weather.irradiance < 1) return " · keine Einstrahlung";
+  return "";
 }
 
 /* ── Bausteine ───────────────────────────────────────────────────────────── */
